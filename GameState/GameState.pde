@@ -1,32 +1,37 @@
-private static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;
-private static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
+import java.util.*;
 
-private List<Object3D> mObjects;
+static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;
+static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
+static long lastTime = 0;
 
-public void addObject3D(Object3D toAdd)
+static List<Object3D> mObjects;
+
+void addObject3D(Object3D toAdd)
 {
-  mObjects.qdd(toAdd);
+  mObjects.add(toAdd);
 }
 
-public void removeObject3D(Object3D toRemove)
+void removeObject3D(Object3D toRemove)
 {
   mObjects.remove(toRemove);
 }
 
 // Use this for initialization
 void Start () {
-  mObjects = new List<Object3D>();
+  mObjects = new ArrayList<Object3D>();
 }
 
 // Update is called once per frame
 void draw () {
-  float dt = Time.deltaTime;
-  foreach (Object3D o : mObjects)
+  long newTime = System.currentTimeMillis();
+  float dt = ((float)(lastTime - newTime))/1000;
+  lastTime = newTime;
+  for (Object3D o : mObjects)
   {
     o.UpdateDt(dt);
   }
 
-  int nbObjects = mObjects.Count;
+  int nbObjects = mObjects.size();
   for (int i = 0; i < nbObjects; ++i)
   {
     for (int j = i + 1; j < nbObjects; ++j)
@@ -37,7 +42,7 @@ void draw () {
   }
 }
 
-private boolean collides(SphereCollider s1, SphereCollider s2)
+boolean collides(SphereCollider s1, SphereCollider s2)
 {
   if (s1.isRoot() && s2.isRoot())
   {
@@ -56,7 +61,7 @@ private boolean collides(SphereCollider s1, SphereCollider s2)
   return goThroughCollider(s1, s2);
 }
 
-private boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
+boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
 {
   foreach (SphereCollider s : toGoThrough.getChildren())
   {

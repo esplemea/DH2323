@@ -69,7 +69,7 @@ public class SphereCollider {
     return null;
   }
 
-  public bool isColliding(SphereCollider that)
+  public boolean isColliding(SphereCollider that)
   {
     return (that.mPosition - this.mPosition).magnitude <= that.mRadius + this.mRadius;
   }
@@ -79,7 +79,7 @@ public class SphereCollider {
     return mChildren;
   }
 
-  public bool isRoot()
+  public boolean isRoot()
   {
     return mChildren == null;
   }

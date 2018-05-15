@@ -1,77 +1,91 @@
+import java.util.HashSet;
+
 public class SphereCollider {
-    private Object3D mParent;
-    private Vector3 mPosition;
-    private float mRadius;
-    private HashSet<SphereCollider> mChildren;
-    //private HashSet<Vertice> mVertices;
+  private Object3D mParent;
+  private PVector mPosition;
+  private float mRadius;
+  private HashSet<SphereCollider> mChildren;
+  //private HashSet<Vertice> mVertices;
 
-    /**
-     * Position is relative to parent position
-     **/
-    public SphereCollider(Vector3 position, float radius) : this(position, radius, null)
-    {
 
-    }
+  public SphereCollider(PVector position, float radius, HashSet<SphereCollider> children)
+  {
+    mPosition = position;
+    mRadius = radius;
+    mChildren = children;
+    //mVertices = null;
+  }
 
-    public SphereCollider(Vector3 position, float radius, HashSet<SphereCollider> children)
-    {
-        mPosition = position;
-        mRadius = radius;
-        mChildren = children;
-        //mVertices = null;
-    }
+  /**
+   * Position is relative to parent position
+   **/
+  public SphereCollider(PVector position, float radius) {
+    this(position, radius, null);
+  }
 
-    /*public SphereCollider(Vector3 position, float radius, HashSet<Vertice> children)
-    {
-        mPosition = position;
-        mRadius = radius;
-        mChildren = null;
-        mVertices = children;
-    }*/
+  /*public SphereCollider(Vector3 position, float radius, HashSet<Vertice> children)
+   {
+   mPosition = position;
+   mRadius = radius;
+   mChildren = null;
+   mVertices = children;
+   }*/
 
-    public float getRadius()
-    {
-        return mRadius;
-    }
+  public float getRadius()
+  {
+    return mRadius;
+  }
 
-    public Vector3 getPosition()
-    {
-        return mPosition;
-    }
+  public PVector getPosition()
+  {
+    return mPosition;
+  }
 
-    public Vector3 getAbsolutePosition()
-    {
-        Vector3 rot = mParent.getRot();
-        float x = rot.x;
-        float y = rot.y;
-        float z = rot.z;
+  public PVector getAbsolutePosition()
+  {
+    PVector rot = mParent.getRot();
+    float x = rot.x;
+    float y = rot.y;
+    float z = rot.z;
 
-        Matrix4x4 matrixX = new Matrix4x4();
-        matrixX.SetColumn(0, new Vector4(1, 0, 0, 0));
-        matrixX.SetColumn(1, new Vector4(0, Mathf.Cos(x), -Mathf.Sin(x), 0));
-        matrixX.SetColumn(2, new Vector4(0, Mathf.Sin(x), Mathf.Cos(x), 0));
-        Vector3 pos = mParent.getPosition();
-        matrix.SetColumn(3, new Vector4(pos.x, pos.y, pos.z, 1));
-        return null;
-    }
+    float[][] matrixX = new float[3][3];
+    matrixX[0] = new float[]{1, 0, 0, 0};
+    matrixX[1] = new float[]{0, cos(x), -sin(x), 0};
+    matrixX[2] = new float[]{0, sin(x),  cos(x), 0};
+    
+    
+    float[][] matrixY = new float[3][3];
+    matrixX[0] = new float[]{ cos(y), 0, sin(y)};
+    matrixX[1] = new float[]{0, 1, 0};
+    matrixX[2] = new float[]{-sin(y), 0, cos(y)};
+    
+    
+    float[][] matrixZ = new float[3][3];
+    matrixZ[0] = new float[]{cos(z), -sin(z), 0};
+    matrixZ[1] = new float[]{sin(z),  cos(z), 0};
+    matrixZ[2] = new float[]{0, 0, 1};
+    
+    
+    return null;
+  }
 
-    public bool isColliding(SphereCollider that)
-    {
-        return (that.mPosition - this.mPosition).magnitude <= that.mRadius + this.mRadius;
-    }
+  public bool isColliding(SphereCollider that)
+  {
+    return (that.mPosition - this.mPosition).magnitude <= that.mRadius + this.mRadius;
+  }
 
-    public HashSet<SphereCollider> getChildren()
-    {
-        return mChildren;
-    }
+  public HashSet<SphereCollider> getChildren()
+  {
+    return mChildren;
+  }
 
-    public bool isRoot()
-    {
-        return mChildren == null;
-    }
+  public bool isRoot()
+  {
+    return mChildren == null;
+  }
 
-    /*public HashSet<Vertice> getVertices()
-    {
-        return mVertices;
-    }*/
+  /*public HashSet<Vertice> getVertices()
+   {
+   return mVertices;
+   }*/
 }

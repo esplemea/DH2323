@@ -1,21 +1,21 @@
 public class Object3D {
-    private PVector mPosition;
-    private PVector mOldPosition;
-    private boolean mFloating;
-    private float mMass;
-    private float mBounce;
-    private PVector mVelocity;
-    private PVector mAccel;
-    private PVector mRot;
-    private SphereCollider mCollider;
-    private SphereCollider mMovingCollider;
+    PVector mPosition;
+    PVector mOldPosition;
+    boolean mFloating;
+    float mMass;
+    float mBounce;
+    PVector mVelocity;
+    PVector mAccel;
+    PVector mRot;
+    SphereCollider mCollider;
+    SphereCollider mMovingCollider;
 
     public SphereCollider getMovingSphereCollider()
     {
         if (mMovingCollider == null) { 
-            PVector diff = (mPosition - mOldPosition) / 2;
-            float radius = diff.magnitude;
-            mMovingCollider = new SphereCollider(diff + mOldPosition, radius + mCollider.getRadius());
+            PVector diff = (mPosition.sub(mOldPosition)).div(2);
+            float radius = diff.mag();
+            mMovingCollider = new SphereCollider(diff.add(mOldPosition), radius + mCollider.getRadius());
         }
         return mMovingCollider;
     }
@@ -39,8 +39,8 @@ public class Object3D {
     {
         mMovingCollider = null;
         mOldPosition = mPosition;
-        mPosition += .5f * mAccel * dt * dt + mVelocity * dt;
-        mVelocity += mAccel * dt;
+        mPosition = mPosition.add(mAccel.mult(.5f * dt * dt).add(mVelocity.mult(dt)));
+        mVelocity = mVelocity.add(mAccel.mult(dt));
     }
 
     public PVector getRot()

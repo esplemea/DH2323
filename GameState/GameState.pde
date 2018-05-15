@@ -16,8 +16,11 @@ void removeObject3D(Object3D toRemove)
   mObjects.remove(toRemove);
 }
 
-// Use this for initialization
-void Start () {
+void settings() {
+  size(500, 500, P3D);
+}
+
+void setup() {
   mObjects = new ArrayList<Object3D>();
 }
 
@@ -40,6 +43,14 @@ void draw () {
       SphereCollider s2 = mObjects.get(j).getSphereCollider();
     }
   }
+
+  noStroke();
+  directionalLight(50, 100, 125, 0, 1, 0);
+  //ambientLight(102, 102, 102);
+  ambientLight(255, 255, 255);
+  background(200,200,200);
+  fill(74, 178, 118, 80);
+  sphere(30);
 }
 
 boolean collides(SphereCollider s1, SphereCollider s2)
@@ -55,7 +66,7 @@ boolean collides(SphereCollider s1, SphereCollider s2)
   {
     return goThroughCollider(s1, s2);
   }
-  if (s1.getChildren().Count > s2.getChildren().Count) {
+  if (s1.getChildren().size() > s2.getChildren().size()) {
     return goThroughCollider(s2, s1);
   }
   return goThroughCollider(s1, s2);
@@ -63,7 +74,7 @@ boolean collides(SphereCollider s1, SphereCollider s2)
 
 boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
 {
-  foreach (SphereCollider s : toGoThrough.getChildren())
+  for(SphereCollider s : toGoThrough.getChildren())
   {
     boolean exit = collides(s1, s);
     if (exit)

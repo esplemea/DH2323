@@ -1,3 +1,4 @@
 class Util {
-  public Util(){}
+  public Util() {
+  }
 }

@@ -7,6 +7,7 @@ static long lastTime = 0;
 int k = 0;
 
 static List<Object3D> mObjects;
+PShape balloon;
 
 void addObject3D(Object3D toAdd)
 {
@@ -29,6 +30,8 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
   mObjects.add(createDefaultSphere());
+  
+  balloon = loadShape("ballon-stripped-centered.obj");
 }
 
 // Update is called once per frame

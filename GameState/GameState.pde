@@ -1,8 +1,10 @@
 import java.util.*;
 
-static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;
+static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
+;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static long lastTime = 0;
+int k = 0;
 
 static List<Object3D> mObjects;
 
@@ -21,17 +23,33 @@ void settings() {
 }
 
 void setup() {
+  size(500, 500, P3D);
+  background(0);
+  noStroke();
+
   mObjects = new ArrayList<Object3D>();
+  mObjects.add(createDefaultSphere());
 }
 
 // Update is called once per frame
 void draw () {
+  fill(255);
+  background(0);
+  lights();
+
+  translate(250, 0, 0);
+
   long newTime = System.currentTimeMillis();
-  float dt = ((float)(lastTime - newTime))/1000;
+  float dt = ((float)(newTime - lastTime))/1000;
   lastTime = newTime;
   for (Object3D o : mObjects)
   {
-    o.UpdateDt(dt);
+    if (dt < 1)
+      o.Update(dt);
+    pushMatrix();
+    translate(o.getPosition());
+    sphere(o.getSphereCollider().getRadius());
+    popMatrix();
   }
 
   int nbObjects = mObjects.size();
@@ -41,6 +59,7 @@ void draw () {
     {
       SphereCollider s1 = mObjects.get(i).getSphereCollider();
       SphereCollider s2 = mObjects.get(j).getSphereCollider();
+      collides(s1, s2);
     }
   }
 
@@ -74,11 +93,22 @@ boolean collides(SphereCollider s1, SphereCollider s2)
 
 boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
 {
-  for(SphereCollider s : toGoThrough.getChildren())
+  for (SphereCollider s : toGoThrough.getChildren())
   {
     boolean exit = collides(s1, s);
     if (exit)
       return true;
   }
   return false;
+}
+
+void translate(PVector p) {
+  translate(p.x, p.y, p.z);
+}
+
+Object3D createDefaultSphere() {
+  //volumic mass 0.169 is for helium
+  Object3D o1 = new Object3D(new PVector(0, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30));
+  return o1;
 }

@@ -24,7 +24,6 @@ void settings() {
 }
 
 void setup() {
-  size(500, 500, P3D);
   background(0);
   noStroke();
 
@@ -73,6 +72,7 @@ void draw () {
   background(200,200,200);
   fill(74, 178, 118, 80);
   sphere(30);
+  shape(balloon);
 }
 
 boolean collides(SphereCollider s1, SphereCollider s2)

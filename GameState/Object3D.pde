@@ -54,8 +54,8 @@ class Object3D {
   {
     //mMovingCollider = null;
     if (!mFloating) {
-      mOldPosition = mPosition;
-      mPosition.add(PVector.mult(mAccel, .5 * dt * dt).add(PVector.mult(mVelocity, dt)));
+      mOldPosition = mPosition.copy();
+      mPosition = PVector.add(mPosition, PVector.mult(mAccel, .5 * dt * dt).add(PVector.mult(mVelocity, dt)));
       mVelocity.add(PVector.mult(mAccel, dt));
     }
   }
@@ -69,8 +69,33 @@ class Object3D {
   {
     return mPosition;
   }
+  
+  PVector getOldPosition()
+  {
+    return mOldPosition;
+  }
+  
+  void setPosition(PVector newPos){
+    mPosition = newPos;
+  }
 
   boolean isFloating() {
     return mFloating;
+  }
+  
+  float getMass(){
+    return mMass;
+  }
+  
+  PVector getVelocity(){
+    return mVelocity; 
+  }
+  
+  float getBounce(){
+    return mBounce;  
+  }
+  
+  void setVelocity(PVector velocity){
+    mVelocity = velocity;  
   }
 }

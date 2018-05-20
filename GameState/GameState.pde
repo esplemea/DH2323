@@ -191,13 +191,13 @@ Object3D createDefaultSphere() {
   //volumic mass 0.169 is for helium
   Object3D o1 = new Object3D(new PVector(0, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
 
-  Set<SphereCollider> mChildren = new HashSet<>();
-  mChildren.add(new SphereCollider(new PVector(0,-15,0),50));
-  mChildren.add(new SphereCollider(new PVector(0,39,0),25));
-  mChildren.add(new SphereCollider(new PVector(6,26,0),30));
-  mChildren.add(new SphereCollider(new PVector(-3,26,-5.2),30));
-  mChildren.add(new SphereCollider(new PVector(-3,26,5.2),30));
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 65, mChildren));
+  Set<SphereCollider> mChildren = new HashSet();
+  mChildren.add(new SphereCollider(new PVector(0,-15,0),50, o1));
+  mChildren.add(new SphereCollider(new PVector(0,39,0),25, o1));
+  mChildren.add(new SphereCollider(new PVector(6,26,0),30, o1));
+  mChildren.add(new SphereCollider(new PVector(-3,26,-5.2),30, o1));
+  mChildren.add(new SphereCollider(new PVector(-3,26,5.2),30, o1));
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 65, o1, mChildren));
 
   return o1;
 }

@@ -8,19 +8,20 @@ public class SphereCollider {
   //private HashSet<Vertice> mVertices;
 
 
-  public SphereCollider(PVector position, float radius, Set<SphereCollider> children)
+  public SphereCollider(PVector position, float radius, Object3D parent, Set<SphereCollider> children)
   {
     mPosition = position;
     mRadius = radius;
     mChildren = children;
+    mParent = parent;
     //mVertices = null;
   }
 
   /**
    * Position is relative to parent position
    **/
-  public SphereCollider(PVector position, float radius) {
-    this(position, radius, null);
+  public SphereCollider(PVector position, float radius, Object3D parent) {
+    this(position, radius, parent, null);
   }
 
   /*public SphereCollider(Vector3 position, float radius, HashSet<Vertice> children)
@@ -41,7 +42,8 @@ public class SphereCollider {
     return mPosition;
   }
 
-  public PVector getAbsolutePosition()
+  //boolean oldPosition to say if relative to old or new position
+  PVector getAbsolutePosition(boolean oldPosition)
   {
     PVector rot = mParent.getRot();
     float x = rot.x;
@@ -65,13 +67,17 @@ public class SphereCollider {
     matrixZ[1] = new float[]{sin(z), cos(z), 0};
     matrixZ[2] = new float[]{0, 0, 1};
 
-
-    return null;
+    PVector out = new PVector();
+    toMatrix(matrixX).mult(mPosition, out);
+    toMatrix(matrixY).mult(out, out);
+    toMatrix(matrixZ).mult(out, out);
+    
+    return out.add(oldPosition ? mParent.getOldPosition() : mParent.getPosition());
   }
 
   public boolean isColliding(SphereCollider that)
   {
-    return that.mPosition.sub(this.mPosition).mag() <= that.mRadius + this.mRadius;
+    return that.getAbsolutePosition(false).sub(this.getAbsolutePosition(false)).mag() <= that.mRadius + this.mRadius;
   }
 
   public Set<SphereCollider> getChildren()
@@ -83,9 +89,21 @@ public class SphereCollider {
   {
     return mChildren == null;
   }
+  
+  Object3D getParent(){
+    return mParent;
+  }
 
   /*public HashSet<Vertice> getVertices()
    {
    return mVertices;
    }*/
+   
+   //matrix is 3x3
+   PMatrix3D toMatrix(float[][] matrix){
+     return new PMatrix3D(matrix[0][0], matrix[0][1], matrix[0][2], 0,
+     matrix[1][0], matrix[1][1], matrix[1][2], 0,
+     matrix[2][0], matrix[2][1], matrix[2][2], 0,
+     0,0,0,1);
+   }
 }

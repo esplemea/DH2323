@@ -112,7 +112,7 @@ void translate(PVector p) {
 Object3D createDefaultSphere() {
   //volumic mass 0.169 is for helium
   Object3D o1 = new Object3D(new PVector(0, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  Set<SphereCollider> mChildren = new HashSet<>();
+  Set<SphereCollider> mChildren = new HashSet<SphereCollider>();
   mChildren.add(new SphereCollider(new PVector(0,-15,0),50));
   mChildren.add(new SphereCollider(new PVector(0,39,0),25));
   mChildren.add(new SphereCollider(new PVector(6,26,0),30));

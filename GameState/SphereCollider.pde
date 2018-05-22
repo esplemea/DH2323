@@ -5,31 +5,33 @@ public class SphereCollider {
   private PVector mPosition;
   private float mRadius;
   private Set<SphereCollider> mChildren;
-  //private HashSet<Vertice> mVertices;
+  private Set<Vertice> mVertices;
 
 
-  public SphereCollider(PVector position, float radius, Set<SphereCollider> children)
+  public SphereCollider(PVector position, float radius, Object3D parent, Set<SphereCollider> children)
   {
     mPosition = position;
     mRadius = radius;
     mChildren = children;
-    //mVertices = null;
+    mParent = parent;
+    mVertices = null;
   }
 
   /**
    * Position is relative to parent position
    **/
-  public SphereCollider(PVector position, float radius) {
-    this(position, radius, null);
+  public SphereCollider(PVector position, float radius, Object3D parent) {
+    this(position, radius, parent, null);
   }
 
-  /*public SphereCollider(Vector3 position, float radius, HashSet<Vertice> children)
-   {
-   mPosition = position;
-   mRadius = radius;
-   mChildren = null;
-   mVertices = children;
-   }*/
+  public SphereCollider(PVector position, float radius, Set<Vertice> children, Object3D parent)
+  {
+    mPosition = position;
+    mRadius = radius;
+    mChildren = null;
+    mParent = parent;
+    mVertices = children;
+  }
 
   public float getRadius()
   {
@@ -41,7 +43,8 @@ public class SphereCollider {
     return mPosition;
   }
 
-  public PVector getAbsolutePosition()
+  //boolean oldPosition to say if relative to old or new position
+  PVector getAbsolutePosition(boolean oldPosition)
   {
     PVector rot = mParent.getRot();
     float x = rot.x;
@@ -55,9 +58,9 @@ public class SphereCollider {
 
 
     float[][] matrixY = new float[3][3];
-    matrixX[0] = new float[]{ cos(y), 0, sin(y)};
-    matrixX[1] = new float[]{0, 1, 0};
-    matrixX[2] = new float[]{-sin(y), 0, cos(y)};
+    matrixY[0] = new float[]{ cos(y), 0, sin(y)};
+    matrixY[1] = new float[]{0, 1, 0};
+    matrixY[2] = new float[]{-sin(y), 0, cos(y)};
 
 
     float[][] matrixZ = new float[3][3];
@@ -65,13 +68,20 @@ public class SphereCollider {
     matrixZ[1] = new float[]{sin(z), cos(z), 0};
     matrixZ[2] = new float[]{0, 0, 1};
 
+    
 
-    return null;
+    PVector out = new PVector();
+    toMatrix(matrixX).mult(mPosition, out);
+    toMatrix(matrixY).mult(out, out);
+    toMatrix(matrixZ).mult(out, out);
+    
+
+    return out.add(oldPosition ? mParent.getOldPosition() : mParent.getPosition());
   }
 
   public boolean isColliding(SphereCollider that)
   {
-    return that.mPosition.sub(this.mPosition).mag() <= that.mRadius + this.mRadius;
+    return that.getAbsolutePosition(false).sub(this.getAbsolutePosition(false)).mag() <= that.mRadius + this.mRadius;
   }
 
   public Set<SphereCollider> getChildren()
@@ -84,8 +94,14 @@ public class SphereCollider {
     return mChildren == null;
   }
 
-  /*public HashSet<Vertice> getVertices()
-   {
-   return mVertices;
-   }*/
+  Object3D getParent() {
+    return mParent;
+  }
+
+  Set<Vertice> getVertices()
+  {
+    return mVertices;
+  }
+
+  
 }

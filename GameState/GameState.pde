@@ -242,7 +242,6 @@ Object3D createWall(PVector position, PVector rot) {
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(wall);
-
   return o1;
 }
 

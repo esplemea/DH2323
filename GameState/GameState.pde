@@ -45,15 +45,15 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
   //mObjects.add(createDefaultSphere());
-  Object3D o1 = new Object3D(new PVector(0, 0, -20), false, 10, 0.169f, 0.9f, new PVector(50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(new PVector(120, 120, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
   mObjects.add(o1);
 
-  Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  /*Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
-  mObjects.add(o2);
+  mObjects.add(o2);*/
 
-  mObjects.add(createWall(new PVector(175, 50, 0), new PVector(0, -PI/3, 0)));
+  mObjects.add(createWall(new PVector(250, 0, -200), new PVector(0, 0, 0)));
 }
 
 // Update is called once per frame
@@ -338,14 +338,17 @@ boolean isColliding(SphereCollider s, Vertice v) {
     Object3D parent = s.getParent();
     parent.setPosition(newCenter);
     //todo direction
-    PVector plan = normal.cross(velocity.cross(normal));
+    /*PVector plan = normal.cross(velocity.cross(normal));
     log("plan "+plan+" normal "+normal+" velocity "+velocity);
     c = -(plan.x*newCenter.x+plan.y*newCenter.y+plan.z*newCenter.z);
     float distanceToPlan = Math.abs(plan.dot(oldCenter) + c);
     
     PVector newVelocity = (PVector.sub(PVector.add(oldCenter, PVector.mult(plan.normalize(), distanceToPlan * 2)), newCenter)).normalize();
-    parent.setVelocity(newVelocity.mult(parent.getBounce() * v.getParent().getBounce() * parent.getVelocity().mag()));
-    log("distance to plan "+distanceToPlan+" oldVelocity "+velocity+" new vel "+newVelocity);
+    parent.setVelocity(newVelocity.mult(parent.getBounce() * v.getParent().getBounce() * parent.getVelocity().mag()));*/
+    PVector newVelocity = PVector.sub(velocity, PVector.mult(normal, 2*normal.dot(velocity)));
+    newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce());
+    parent.setVelocity(newVelocity);
+    log("oldVelocity "+velocity+" new vel "+newVelocity);
   }
   println();
   return output;

@@ -45,15 +45,15 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
   //mObjects.add(createDefaultSphere());
-  Object3D o1 = new Object3D(new PVector(0, 0, -20), false, 10, 0.169f, 0.9f, new PVector(50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(new PVector(120, 120, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
   mObjects.add(o1);
 
-  Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  /*Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
-  mObjects.add(o2);
+  mObjects.add(o2);*/
 
-  mObjects.add(createWall(new PVector(175, 50, -300), new PVector(0, -PI/3, 0)));
+  mObjects.add(createWall(new PVector(250, 0, -200), new PVector(0, 0, 0)));
 }
 
 // Update is called once per frame

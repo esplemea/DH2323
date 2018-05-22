@@ -266,8 +266,7 @@ boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
     if (isColliding(s, v))
       return true;
   }
-  return false;
-}
+  return false;}
 
 //the object containing the Vertice v is considered as floating, hence no mass, moving or backtracking!
 boolean isColliding(SphereCollider s, Vertice v) {

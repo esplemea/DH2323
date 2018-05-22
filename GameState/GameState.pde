@@ -1,5 +1,14 @@
-import java.util.*; //<>//
+import java.util.*; //<>// //<>//
 
+
+// -----------------------------------------------------------------
+float eyeX, eyeY, eyeZ;
+float ang = 0;
+int d = 600;
+// -----------------------------------------------------------------
+ 
+// -----------------------------------------------------------------
+ 
 static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
 static final int WALL_SIZE = 250;
@@ -10,6 +19,7 @@ int k = 0;
 static List<Object3D> mObjects;
 PShape balloon;
 PShape wall;
+PShape roofWall;
 
 void addObject3D(Object3D toAdd)
 {
@@ -27,6 +37,11 @@ void settings() {
 
 void setup() {
   background(0);
+  
+  eyeX = width/2;
+  eyeY = height/2;
+  eyeZ = d;
+  
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
   wall = createShape();
@@ -42,6 +57,14 @@ void setup() {
   wall.vertex(-WALL_SIZE/2, WALL_SIZE/2, 0);
   wall.vertex(-WALL_SIZE/2, -WALL_SIZE/2, 0);
   wall.endShape();
+  
+  roofWall = createShape();
+  roofWall.beginShape();
+  //roofWall.noStroke();
+  roofWall.vertex(WALL_SIZE/2, 0, 0);
+  roofWall.vertex(-WALL_SIZE/2, 0, 0);
+  roofWall.vertex(0, -WALL_SIZE/2, WALL_SIZE/2);
+  roofWall.endShape();
 
   mObjects = new ArrayList<Object3D>();
   //mObjects.add(createDefaultSphere());
@@ -53,7 +76,9 @@ void setup() {
   o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
   mObjects.add(o2);*/
 
-  mObjects.add(createWall(new PVector(250, 0, -200), new PVector(0, 0, 0)));
+  PVector position = new PVector(250,0,0);
+  PVector rotation = new PVector(0,0.5,0);
+  createRoom(position, rotation);
 }
 
 // Update is called once per frame
@@ -61,6 +86,17 @@ void draw () {
   fill(255);
   background(0);
   lights();
+  
+  // CAMERA:
+  if (eyeZ<0){
+    camera(eyeX, eyeY, eyeZ, 
+    width/2, height/2, 0, 
+    0, -1, 0);
+  }else{
+    camera(eyeX, eyeY, eyeZ, 
+    width/2, height/2, 0, 
+    0, 1, 0);
+  }
 
   translate(0, 250, 0);
 
@@ -242,7 +278,33 @@ Object3D createWall(PVector position, PVector rot) {
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(wall);
+  return o1; //<>//
+}
+
+//Create default square shaped wall of size 500x500
+Object3D createRoofWall(PVector position, PVector rot) {
+  Object3D o1 = new Object3D(position, false, 0, 0, 1, new PVector(0, 0, 0), new PVector(0, 0, 0), rot);
+  float radius = (float)(Math.pow(WALL_SIZE*WALL_SIZE/2, 0.5));
+
+  Set<Vertice> mVertices = new HashSet();
+  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, WALL_SIZE/2, WALL_SIZE/2), o1));
+
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
+  o1.setShape(roofWall);
   return o1;
+}
+
+//Create default square shaped wall of size 500x500
+void createRoom(PVector position, PVector rot) {
+  mObjects.add(createWall(position.copy().add(new PVector(0, 0, -WALL_SIZE/2)), new PVector(0, 0, 0)));
+  mObjects.add(createWall(position.copy().add(new PVector(0, 0, WALL_SIZE/2)), new PVector(0, 0, 0)));
+  mObjects.add(createWall(position.copy().add(new PVector(-WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
+  mObjects.add(createWall(position.copy().add(new PVector(WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
+  
+  mObjects.add(createRoofWall(position.copy().add(new PVector(0, -WALL_SIZE/2, -WALL_SIZE/2)), new PVector(0, 0, 0)));
+  mObjects.add(createRoofWall(position.copy().add(new PVector(0, -WALL_SIZE/2, WALL_SIZE/2)), new PVector(0, PI, 0)));
+  mObjects.add(createRoofWall(position.copy().add(new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0)), new PVector(0, PI/2, 0)));
+  mObjects.add(createRoofWall(position.copy().add(new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0)), new PVector(0, -PI/2, 0)));
 }
 
 void log(String message) {
@@ -397,3 +459,28 @@ String arrayToString(float[] array) {
     out+=array[i]+",";
   return out + "]";
 }
+
+void keyPressed() {
+  switch(key) {
+    // Move camera
+  case CODED:
+    if (keyCode == UP) {
+      ang += 5;
+    }
+    if (keyCode == DOWN) {
+      ang -= 5;
+    }
+    break;
+ 
+  default:
+    // !CODED:
+    break;
+  } // switch
+ 
+  if (ang>=360)
+    ang=0;
+  eyeY = (height/2)-d*(sin(radians(ang)));
+  eyeZ = d*cos(radians(ang));
+  println("Angle "+ang+": "+eyeX+" / "+eyeY+" / "+eyeZ);
+}
+// --------------------------------------------------

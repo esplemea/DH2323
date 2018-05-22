@@ -10,6 +10,7 @@ class Object3D {
   PVector mVelocity;
   PVector mAccel;
   PVector mRot;
+  PShape mShape = null;
   SphereCollider mCollider;
   //SphereCollider mMovingCollider;
 
@@ -29,6 +30,14 @@ class Object3D {
 
   void addCollider(SphereCollider s) {
     mCollider = s;
+  }
+  
+  void setShape(PShape shape){
+    mShape = shape;
+  }
+  
+  PShape getShape(){
+    return mShape;
   }
 
   /*SphereCollider getMovingSphereCollider()

@@ -5,7 +5,7 @@ public class SphereCollider {
   private PVector mPosition;
   private float mRadius;
   private Set<SphereCollider> mChildren;
-  //private HashSet<Vertice> mVertices;
+  private Set<Vertice> mVertices;
 
 
   public SphereCollider(PVector position, float radius, Object3D parent, Set<SphereCollider> children)
@@ -14,7 +14,7 @@ public class SphereCollider {
     mRadius = radius;
     mChildren = children;
     mParent = parent;
-    //mVertices = null;
+    mVertices = null;
   }
 
   /**
@@ -24,13 +24,14 @@ public class SphereCollider {
     this(position, radius, parent, null);
   }
 
-  /*public SphereCollider(Vector3 position, float radius, HashSet<Vertice> children)
-   {
-   mPosition = position;
-   mRadius = radius;
-   mChildren = null;
-   mVertices = children;
-   }*/
+  public SphereCollider(PVector position, float radius, Set<Vertice> children, Object3D parent)
+  {
+    mPosition = position;
+    mRadius = radius;
+    mChildren = null;
+    mParent = parent;
+    mVertices = children;
+  }
 
   public float getRadius()
   {
@@ -57,9 +58,9 @@ public class SphereCollider {
 
 
     float[][] matrixY = new float[3][3];
-    matrixX[0] = new float[]{ cos(y), 0, sin(y)};
-    matrixX[1] = new float[]{0, 1, 0};
-    matrixX[2] = new float[]{-sin(y), 0, cos(y)};
+    matrixY[0] = new float[]{ cos(y), 0, sin(y)};
+    matrixY[1] = new float[]{0, 1, 0};
+    matrixY[2] = new float[]{-sin(y), 0, cos(y)};
 
 
     float[][] matrixZ = new float[3][3];
@@ -67,11 +68,14 @@ public class SphereCollider {
     matrixZ[1] = new float[]{sin(z), cos(z), 0};
     matrixZ[2] = new float[]{0, 0, 1};
 
+    
+
     PVector out = new PVector();
     toMatrix(matrixX).mult(mPosition, out);
     toMatrix(matrixY).mult(out, out);
     toMatrix(matrixZ).mult(out, out);
     
+
     return out.add(oldPosition ? mParent.getOldPosition() : mParent.getPosition());
   }
 
@@ -89,21 +93,15 @@ public class SphereCollider {
   {
     return mChildren == null;
   }
-  
-  Object3D getParent(){
+
+  Object3D getParent() {
     return mParent;
   }
 
-  /*public HashSet<Vertice> getVertices()
-   {
-   return mVertices;
-   }*/
-   
-   //matrix is 3x3
-   PMatrix3D toMatrix(float[][] matrix){
-     return new PMatrix3D(matrix[0][0], matrix[0][1], matrix[0][2], 0,
-     matrix[1][0], matrix[1][1], matrix[1][2], 0,
-     matrix[2][0], matrix[2][1], matrix[2][2], 0,
-     0,0,0,1);
-   }
+  Set<Vertice> getVertices()
+  {
+    return mVertices;
+  }
+
+  
 }

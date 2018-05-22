@@ -23,7 +23,9 @@ class Object3D {
     mVelocity = velocity;
     mAccel = accel;
     mVolumicMass = volumicMass;
-    mAccel.y += 9.8 * (0.1786 * 0.001) * (4/3 * PI * 1.5 * 1.5 * 1.5); //
+    if(!floating){
+      mAccel.y -= 9.8 * (volumicMass) * (4/3 * PI * 1.5 * 1.5 * 1.5);
+    }
     mRot = rot;
   }
 

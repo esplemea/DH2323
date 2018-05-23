@@ -1,17 +1,17 @@
 import java.util.*; //<>// //<>//
 
-
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
-float ang = 0;
-int d = 600;
+float angUD = 0;
+float angLR = 0;
+int d = 200;
 // -----------------------------------------------------------------
  
 // -----------------------------------------------------------------
  
 static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
-static final int WALL_SIZE = 250;
+static final int WALL_SIZE = 500;
 ;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static long lastTime = 0;
 int k = 0;
@@ -47,6 +47,7 @@ void setup() {
   wall = createShape();
   wall.beginShape();
   wall.noStroke();
+  wall.fill(200,200,255);
 
   wall.beginShape();
   wall.vertex(WALL_SIZE/2, WALL_SIZE/2, 0);
@@ -60,17 +61,18 @@ void setup() {
   
   roofWall = createShape();
   roofWall.beginShape();
-  //roofWall.noStroke();
+  roofWall.noStroke();
+  roofWall.fill(210,210,210);
   roofWall.vertex(WALL_SIZE/2, 0, 0);
   roofWall.vertex(-WALL_SIZE/2, 0, 0);
   roofWall.vertex(0, -WALL_SIZE/2, WALL_SIZE/2);
   roofWall.endShape();
 
   mObjects = new ArrayList<Object3D>();
-  //mObjects.add(createDefaultSphere());
-  Object3D o1 = new Object3D(new PVector(120, 120, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  mObjects.add(createDefaultSphere());
+  /*Object3D o1 = new Object3D(new PVector(120, 120, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
-  mObjects.add(o1);
+  mObjects.add(o1);*/
 
   /*Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
@@ -166,11 +168,11 @@ boolean collides(SphereCollider s1, SphereCollider s2)
       PVector v1 = PVector.sub(newPos2, oldPos2).add(newPos1);//.sub(oldPos1);
       PVector v2 = PVector.sub(oldPos2, oldPos1);
 
-      double cosAngle = Math.cos(PVector.angleBetween(v1, v2));
+      double cosangle = Math.cos(PVector.angleBetween(v1, v2));
       double magV1 = v1.mag();
       double magV2 = v2.mag();
-      double sqrtDelta = Math.sqrt(Math.pow(2*magV1*magV2*cosAngle, 2) - 4*Math.pow(magV1, 2)*(Math.pow(magV2, 2) - Math.pow(s1.getRadius() + s2.getRadius(), 2)));
-      double b = 2*magV1*magV2*cosAngle;
+      double sqrtDelta = Math.sqrt(Math.pow(2*magV1*magV2*cosangle, 2) - 4*Math.pow(magV1, 2)*(Math.pow(magV2, 2) - Math.pow(s1.getRadius() + s2.getRadius(), 2)));
+      double b = 2*magV1*magV2*cosangle;
       double a = 2*magV1*magV1;
 
       float sol1 = (float)((-b + sqrtDelta)/a);
@@ -253,7 +255,7 @@ void translate(PVector p) {
 
 Object3D createDefaultSphere() {
   //volumic mass 0.169 is for helium
-  Object3D o1 = new Object3D(new PVector(0, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(new PVector(250, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.setShape(balloon);
 
   Set<SphereCollider> mChildren = new HashSet();
@@ -360,7 +362,7 @@ boolean isColliding(SphereCollider s, Vertice v) {
   float squareRadius = radius * radius;
   PVector newCenter = PVector.add(oldCenter, PVector.mult(velocity, t0));
 
-  if (checkPointInTriangle(intersection, vertices[0], vertices[1], vertices[2])) {
+  if (checkPointInTriangUDle(intersection, vertices[0], vertices[1], vertices[2])) {
     log("intersect surface");
     output = true;
   } else {
@@ -416,7 +418,7 @@ boolean isColliding(SphereCollider s, Vertice v) {
   return output;
 }
 
-boolean checkPointInTriangle(PVector point, PVector pa, PVector pb, PVector pc) {
+boolean checkPointInTriangUDle(PVector point, PVector pa, PVector pb, PVector pc) {
   PVector e10 = PVector.sub(pb, pa);
   PVector e20 = PVector.sub(pc, pa);
   float a = e10.dot(e10);
@@ -465,10 +467,16 @@ void keyPressed() {
     // Move camera
   case CODED:
     if (keyCode == UP) {
-      ang += 5;
+      angUD += 5;
     }
     if (keyCode == DOWN) {
-      ang -= 5;
+      angUD -= 5;
+    }
+    if (keyCode == LEFT) {
+      angLR += 5;
+    }
+    if (keyCode == RIGHT) {
+      angLR -= 5;
     }
     break;
  
@@ -477,10 +485,13 @@ void keyPressed() {
     break;
   } // switch
  
-  if (ang>=360)
-    ang=0;
-  eyeY = (height/2)-d*(sin(radians(ang)));
-  eyeZ = d*cos(radians(ang));
-  println("Angle "+ang+": "+eyeX+" / "+eyeY+" / "+eyeZ);
+  if (angUD>=360)
+    angUD=0;
+   if (angLR>=360)
+    angLR=0;
+  eyeY = (height/2)-d*(sin(radians(angUD)));
+  eyeZ = d*cos(radians(angUD));
+  //eyeX = (width/2)-d*(sin(radians(angLR)));
+  println("angUDle "+angUD+": "+eyeX+" / "+eyeY+" / "+eyeZ);
 }
 // --------------------------------------------------

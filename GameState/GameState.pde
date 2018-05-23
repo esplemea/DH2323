@@ -7,10 +7,10 @@ float angLR = 0;
 int d = 1000;
 // -----------------------------------------------------------------
 
-static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
-static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
+static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;//re-check the same item in one frame after a collision
 static final int WALL_SIZE = 500;
-static final float EPSILON_COLLISION_TRIANGLE = 0.01f;//may be usefull to do collisions multiple times in one fram, need to talk about it...
+static final float EPSILON_COLLISION_TRIANGLE = 0.01f;
+static final float OVER_BACKTRACKING_TRIANGLE = 10f;
 static long lastTime = 0;
 int k = 0;
 
@@ -71,6 +71,9 @@ void setup() {
   mObjects.add(createDefaultBalloon(new PVector(120f, 130f, 0)));
   mObjects.add(createDefaultBalloon(new PVector(250f, 130f, 0)));
   mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 0)));
+  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, -150)));
+  //mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 240)));
+  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 240)));
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
    o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
    o1.setShape(balloon);
@@ -79,10 +82,11 @@ void setup() {
   PVector position = new PVector(250, 0, 0);
   PVector rotation = new PVector(0, 0.5, 0);
   createRoom(position, rotation);
+  println("setup");
 }
 
 // Update is called once per frame
-void draw () {
+void draw () {  
   fill(255);
   background(0);
   //directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
@@ -112,14 +116,24 @@ void draw () {
   }
 
   int nbObjects = mObjects.size();
+  int looping = 0;
+  boolean collided = false;
   for (int i = 0; i < nbObjects; ++i)
   {
     for (int j = i + 1; j < nbObjects; ++j)
     {
       SphereCollider s1 = mObjects.get(i).getSphereCollider();
       SphereCollider s2 = mObjects.get(j).getSphereCollider();
-      collides(s1, s2);
+      if(collides(s1, s2)){
+        if(looping++ < THRESHOLD_COLLIDE_AGAIN_OBJECTS){
+          --i;
+          collided = true;
+        }
+        break;
+      }
     }
+    if(!collided)
+      looping = 0;
   }
 
   for (Object3D o : mObjects) {
@@ -266,7 +280,7 @@ Object3D createDefaultBalloon(PVector position) {
   mChildren.add(new SphereCollider(new PVector(-3, 26, 5.2), 30, o1));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 65, o1, mChildren));
 
-  return o1;
+  return o1; //<>//
 }
 
 //Create default square shaped wall of size 500x500
@@ -280,7 +294,7 @@ Object3D createWall(PVector position, PVector rot) {
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(wall);
-  return o1; //<>// //<>//
+  return o1; //<>//
 }
 
 //Create default square shaped wall of size 500x500
@@ -310,7 +324,7 @@ void createRoom(PVector position, PVector rot) {
 }
 
 void log(String message) {
-  println(System.currentTimeMillis() +" "+ message);
+  //println(System.currentTimeMillis() +" "+ message);
 }
 
 String PVectorToString(PVector p) { 
@@ -362,8 +376,8 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
 
   PVector oldCenter = s.getAbsolutePosition(true);
   PVector velocity = PVector.sub(center, oldCenter);
-  float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity);
-  if (t0 > 1 || t0 < 0)
+  float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity); //<>//
+  if (t0 > 1 + OVER_BACKTRACKING_TRIANGLE || t0 < 0 - OVER_BACKTRACKING_TRIANGLE)
     return false;
   PVector intersection = PVector.sub(oldCenter, normal).add(PVector.mult(velocity, t0));
 
@@ -376,7 +390,7 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
     setNewCenter(parent, center, newCenter);
 
     PVector newVelocity = PVector.sub(velocity, PVector.mult(normal, 2*normal.dot(velocity)));
-    newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce()); //<>//
+    newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce());
     log("oldVelocity "+parent.getVelocity()+" new vel "+newVelocity);
     parent.setVelocity(newVelocity);
 
@@ -423,7 +437,6 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
       newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
       parent.setVelocity(newVelocity);
       log("oldVelocity "+velocity+" new vel "+newVelocity);
-      println();
 
       return true;
     }
@@ -482,7 +495,6 @@ boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector a
     newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
     parent.setVelocity(newVelocity);
     log("oldVelocity "+velocity+" new vel "+newVelocity);
-    println();
   }
 
   return output;
@@ -511,10 +523,10 @@ void keyPressed() {
     if (keyCode == RIGHT) {
       angLR -= 5;
     }
+    
     break;
-
+    
   default:
-    // !CODED:
     break;
   } // switch
 

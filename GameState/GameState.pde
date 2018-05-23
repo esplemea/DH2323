@@ -1,4 +1,4 @@
-import java.util.*; //<>// //<>//
+import java.util.*; //<>// //<>// //<>//
 
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
@@ -36,9 +36,9 @@ void settings() {
 void setup() {
   background(0);
   
-  eyeX = width/2;
+  eyeX = (width/2)-d*(sin(radians(angLR)));
   eyeY = (height/2)-d*(sin(radians(angUD)));
-  eyeZ = d*cos(radians(angUD));
+  eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
   
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
@@ -88,7 +88,7 @@ void draw () {
   lights();
   
   // CAMERA:
-  if (eyeZ<0){
+  if (eyeX<0){
     camera(eyeX, eyeY, eyeZ, 
     width/2, height/2, 0, 
     0, -1, 0);
@@ -278,7 +278,7 @@ Object3D createWall(PVector position, PVector rot) {
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(wall);
-  return o1; //<>//
+  return o1; //<>// //<>//
 }
 
 //Create default square shaped wall of size 500x500
@@ -324,7 +324,7 @@ PMatrix3D toMatrix(float[][] matrix) {
 }
 
 boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
-  for (Vertice v : vertices) { //<>//
+  for (Vertice v : vertices) { //<>// //<>//
     if (isCollidingSurface(s, v))
       return true;
   }
@@ -420,7 +420,7 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
 
       return true;
     }
-  } //<>//
+  } //<>// //<>//
   return false;
 }
 
@@ -515,9 +515,9 @@ void keyPressed() {
     angUD=0;
    if (angLR>=360)
     angLR=0;
+  eyeX = (width/2)-d*(sin(radians(angLR)))*cos(radians(angUD));
   eyeY = (height/2)-d*(sin(radians(angUD)));
-  eyeZ = d*cos(radians(angUD));
-  //eyeX = (width/2)-d*(sin(radians(angLR)));
+  eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
   println("angUDle "+angUD+": "+eyeX+" / "+eyeY+" / "+eyeZ);
 }
 // --------------------------------------------------

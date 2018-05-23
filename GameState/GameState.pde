@@ -2,9 +2,9 @@ import java.util.*; //<>// //<>//
 
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
-float angUD = -70;
+float angUD = 0;
 float angLR = 0;
-int d = 600;
+int d = 1000;
 // -----------------------------------------------------------------
  
 static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
@@ -45,7 +45,7 @@ void setup() {
   wall = createShape();
   wall.beginShape();
   wall.noStroke();
-  wall.fill(200,200,255);
+  wall.fill(200,200,255, 100);
 
   wall.beginShape();
   wall.vertex(WALL_SIZE/2, WALL_SIZE/2, 0);
@@ -60,7 +60,7 @@ void setup() {
   roofWall = createShape();
   roofWall.beginShape();
   roofWall.noStroke();
-  roofWall.fill(210,210,210);
+  roofWall.fill(210,210,210,100);
   roofWall.vertex(WALL_SIZE/2, 0, 0);
   roofWall.vertex(-WALL_SIZE/2, 0, 0);
   roofWall.vertex(0, -WALL_SIZE/2, WALL_SIZE/2);
@@ -68,31 +68,11 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
 
-  //mObjects.add(createDefaultSphere());
-  Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  mObjects.add(createDefaultSphere());
+  /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
-  mObjects.add(o1);
-  
-  Object3D o2 = new Object3D(new PVector(100f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
-  mObjects.add(o2);
-  
-  Object3D o3 = new Object3D(new PVector(95.5f, 61f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o3.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o3));
-  mObjects.add(o3);
-  
-  Object3D o4 = new Object3D(new PVector(390f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o4.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o4));
-  mObjects.add(o4);
-  
-  Object3D o5 = new Object3D(new PVector(250f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o5.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o5));
-  mObjects.add(o5);
-  
-  Object3D o6 = new Object3D(new PVector(0f, 0f, 50), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o6.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o6));
-  mObjects.add(o6);
-
+  o1.setShape(balloon);
+  mObjects.add(o1);*/
 
   PVector position = new PVector(250,0,0);
   PVector rotation = new PVector(0,0.5,0);
@@ -103,9 +83,9 @@ void setup() {
 void draw () {
   fill(255);
   background(0);
-  directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
-  ambientLight(102,102,102);
-  //lights();
+  //directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
+  //ambientLight(102,102,102);
+  lights();
   
   // CAMERA:
   if (eyeZ<0){
@@ -273,7 +253,7 @@ void translate(PVector p) {
 
 Object3D createDefaultSphere() {
   //volumic mass 0.169 is for helium
-  Object3D o1 = new Object3D(new PVector(250, 0, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.setShape(balloon);
 
   Set<SphereCollider> mChildren = new HashSet();
@@ -307,7 +287,7 @@ Object3D createRoofWall(PVector position, PVector rot) {
   float radius = (float)(Math.pow(WALL_SIZE*WALL_SIZE/2, 0.5));
 
   Set<Vertice> mVertices = new HashSet();
-  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, WALL_SIZE/2, WALL_SIZE/2), o1));
+  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, -WALL_SIZE/2, WALL_SIZE/2), o1));
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(roofWall);

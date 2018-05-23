@@ -23,8 +23,9 @@ class Object3D {
     mVelocity = velocity;
     mAccel = accel;
     mVolumicMass = volumicMass;
-    //TODO archimede/gravity formula, not sure how to do it x)
-    //mAccel.y += ???;
+    if(!floating){
+      mAccel.y -= 9.8 * (volumicMass) * (4/3 * PI * 1.5 * 1.5 * 1.5);
+    }
     mRot = rot;
   }
 

@@ -1,9 +1,10 @@
-import java.util.*; //<>//
+import java.util.*; //<>// //<>//
 
 static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
 static final int WALL_SIZE = 250;
-;//may be usefull to do collisions multiple times in one fram, need to talk about it...
+static final float EPSILON_COLLISION_TRIANGLE = 0.01f
+  ;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static long lastTime = 0;
 int k = 0;
 
@@ -45,13 +46,30 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
   //mObjects.add(createDefaultSphere());
-  Object3D o1 = new Object3D(new PVector(120, 120, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
   mObjects.add(o1);
-
-  /*Object3D o2 = new Object3D(new PVector(500, 0, 30), false, 10, 0.169f, 0.9f, new PVector(-50, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  
+  Object3D o2 = new Object3D(new PVector(100f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o2.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o2));
-  mObjects.add(o2);*/
+  mObjects.add(o2);
+  
+  Object3D o3 = new Object3D(new PVector(95.5f, 61f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  o3.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o3));
+  mObjects.add(o3);
+  
+  Object3D o4 = new Object3D(new PVector(390f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  o4.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o4));
+  mObjects.add(o4);
+  
+  Object3D o5 = new Object3D(new PVector(250f, 0f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  o5.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o5));
+  mObjects.add(o5);
+  
+  Object3D o6 = new Object3D(new PVector(0f, 0f, 50), false, 10, 0.169f, 0.9f, new PVector(0, 0, -50), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  o6.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o6));
+  mObjects.add(o6);
+
 
   mObjects.add(createWall(new PVector(250, 0, -200), new PVector(0, 0, 0)));
 }
@@ -262,24 +280,28 @@ PMatrix3D toMatrix(float[][] matrix) {
 }
 
 boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
+  for (Vertice v : vertices) { //<>//
+    if (isCollidingSurface(s, v))
+      return true;
+  }
   for (Vertice v : vertices) {
-    if (isColliding(s, v))
+    if (isCollidingEdges(s, v))
       return true;
   }
   return false;
 }
 
 //the object containing the Vertice v is considered as floating, hence no mass, moving or backtracking!
-boolean isColliding(SphereCollider s, Vertice v) {
+boolean isCollidingSurface(SphereCollider s, Vertice v) {
   PVector[] vertices = v.getAbsolutePosition(false);
   PVector center = s.getAbsolutePosition(false);
 
   PVector v1v2 = PVector.sub(vertices[1], vertices[0]);
   PVector v1v3 = PVector.sub(vertices[2], vertices[0]);
-  PVector v2v3 = PVector.sub(vertices[2], vertices[1]);
+  //PVector v2v3 = PVector.sub(vertices[2], vertices[1]);
   PVector normal = v1v2.cross(v1v3).normalize();
   float c = -(normal.x*vertices[0].x+normal.y*vertices[0].y+normal.z*vertices[0].z);
-  float radius = s.getRadius(); //<>//
+  float radius = s.getRadius();
 
   //log("center "+center+" normal "+normal+" c "+c);
   float distance = Math.abs(normal.dot(center) + c);
@@ -287,109 +309,132 @@ boolean isColliding(SphereCollider s, Vertice v) {
   if (distance > radius) {
     return false;
   }
-  log("center "+center+" normal "+normal+" c "+c);
-  log("distance "+distance+" radius "+radius);
-  log("return true");
 
-  boolean output = false;
   PVector oldCenter = s.getAbsolutePosition(true);
   PVector velocity = PVector.sub(center, oldCenter);
   float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity);
+  if (t0 > 1 || t0 < 0)
+    return false;
   PVector intersection = PVector.sub(oldCenter, normal).add(PVector.mult(velocity, t0));
-  float squareRadius = radius * radius;
-  PVector newCenter = PVector.add(oldCenter, PVector.mult(velocity, t0));
 
-  if (checkPointInTriangle(intersection, vertices[0], vertices[1], vertices[2])) {
+  if (checkPointInTriangle(intersection, vertices[0], vertices[1], vertices[2], normal)) {
     log("intersect surface");
-    output = true;
-  } else {
-    //check for each of the 3 vertices
-    for (int i = 0; i < 3; ++i) {
-      PVector cp = PVector.sub(vertices[i], center);
-      if (cp.x*cp.x + cp.y*cp.y + cp.z*cp.z <= squareRadius) {
-        log("intersect vertex "+i);
-        output = true;
-        break;
-      }
-    }
-
-    //check for each of the 3 edges that the point is inside of them
-    if (!output) {
-
-      output = checkPointInSegment(vertices[0], vertices[1], center, v1v2, squareRadius);
-      if (output)
-        log("intersect edge1");
-    }
-    if (!output) {
-      output = checkPointInSegment(vertices[0], vertices[2], center, v1v3, squareRadius);
-      if (output)
-        log("intersect edge2");
-    }
-    if (!output) {
-      output = checkPointInSegment(vertices[1], vertices[2], center, v2v3, squareRadius);
-      if (output)
-        log("intersect edge3");
-    }
-  }
-
-  if (output) {
-    log("output true");
-    //Backtrack the object with the sphere collider
-    
+    PVector newCenter = PVector.add(oldCenter, PVector.mult(velocity, t0));
     Object3D parent = s.getParent();
+    log("old pos "+center+" new pos "+newCenter);
     parent.setPosition(newCenter);
-    //todo direction
-    /*PVector plan = normal.cross(velocity.cross(normal));
-    log("plan "+plan+" normal "+normal+" velocity "+velocity);
-    c = -(plan.x*newCenter.x+plan.y*newCenter.y+plan.z*newCenter.z);
-    float distanceToPlan = Math.abs(plan.dot(oldCenter) + c);
-    
-    PVector newVelocity = (PVector.sub(PVector.add(oldCenter, PVector.mult(plan.normalize(), distanceToPlan * 2)), newCenter)).normalize();
-    parent.setVelocity(newVelocity.mult(parent.getBounce() * v.getParent().getBounce() * parent.getVelocity().mag()));*/
+
     PVector newVelocity = PVector.sub(velocity, PVector.mult(normal, 2*normal.dot(velocity)));
     newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce());
     parent.setVelocity(newVelocity);
     log("oldVelocity "+velocity+" new vel "+newVelocity);
+
+    return true;
   }
-  println();
-  return output;
+
+  return false;
 }
 
-boolean checkPointInTriangle(PVector point, PVector pa, PVector pb, PVector pc) {
-  PVector e10 = PVector.sub(pb, pa);
-  PVector e20 = PVector.sub(pc, pa);
-  float a = e10.dot(e10);
-  float b = e10.dot(e20);
-  float c = e20.dot(e20);
-  float ac_bb = (a*c) - (b*b);
-  PVector vp = new PVector(point.x-pa.x, point.y-pa.y, point.z-pa.z);
-  float d = vp.dot(e10);
-  float e = vp.dot(e20);
-  float x = (d*c)-(e*b);
-  float y = (e*a)-(d*b);
-  float z = x+y-ac_bb;
-  return ((((long)z)& ~(((long)x)|((long)y)) ) & 0x80000000) != 0;//todo check this line...
+boolean isCollidingEdges(SphereCollider s, Vertice v) {
+  PVector[] vertices = v.getAbsolutePosition(false);
+  PVector center = s.getAbsolutePosition(false);
+  PVector v1v2 = PVector.sub(vertices[1], vertices[0]);
+  PVector v1v3 = PVector.sub(vertices[2], vertices[0]);
+  PVector v2v3 = PVector.sub(vertices[2], vertices[1]);
+  float radius = s.getRadius();
+
+
+  //check for each of the 3 edges that the point is inside of them
+  if (checkPointInSegmentAndReplace(vertices[0], vertices[1], center, v1v2, radius, s, v)) {
+    return true;
+  }
+  if (checkPointInSegmentAndReplace(vertices[1], vertices[2], center, v2v3, radius, s, v)) {
+    return true;
+  }
+  if (checkPointInSegmentAndReplace(vertices[0], vertices[2], center, v1v3, radius, s, v)) {
+    return true;
+  }
+
+  //check for each of the 3 vertices
+  for (int i = 0; i < 3; ++i) {
+    PVector cp = PVector.sub(vertices[i], center);
+    if (cp.x*cp.x + cp.y*cp.y + cp.z*cp.z <= radius * radius) {
+      log("intersect vertex "+i);
+        
+      PVector interCenter = PVector.sub(center, vertices[i]).normalize();
+      PVector newPos = PVector.add(vertices[i], PVector.mult(interCenter, radius));
+      Object3D parent = s.getParent();
+      log("old pos "+center+" new pos "+newPos);
+      parent.setPosition(newPos);
+  
+      PVector velocity = parent.getVelocity();
+      PVector newVelocity = PVector.sub(velocity, PVector.mult(interCenter, 2*interCenter.dot(velocity)));
+      newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
+      parent.setVelocity(newVelocity);
+      log("oldVelocity "+velocity+" new vel "+newVelocity);
+      println();
+
+      return true;
+    }
+  } //<>//
+  return false;
+}
+
+boolean checkPointInTriangle(PVector p, PVector a, PVector b, PVector c, PVector normal) {
+  float t = (normal.x*(a.x - p.x) + normal.y*(a.y - p.y) + normal.z*(a.z - p.z))/(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+  PVector proj = PVector.add(p, PVector.mult(normal, t));
+  PVector aproj = PVector.sub(a, proj);
+  PVector bproj = PVector.sub(b, proj);
+  PVector cproj = PVector.sub(c, proj);
+  float totalArea = (aproj.cross(bproj).mag() + aproj.cross(cproj).mag() + bproj.cross(cproj).mag())/2;
+  float triangleArea = PVector.sub(b, a).cross(PVector.sub(c, a)).mag()/2;
+  return totalArea - EPSILON_COLLISION_TRIANGLE <= triangleArea;
 }
 
 //p is the center to project on line ab and check if between them
-boolean checkPointInSegment(PVector a, PVector b, PVector p, PVector ab, float squareRadius) {
-  PVector intersect = PVector.add(a, ab.mult(PVector.sub(a, p).dot(ab)/ab.dot(ab)));
-  if (intersect.x*intersect.x + intersect.y*intersect.y + intersect.z*intersect.z > squareRadius)
+boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector ab, float radius, SphereCollider s, Vertice v) {
+  PVector nab = ab.normalize();
+  //float c = -(nab.x*p.x+nab.y*p.y+nab.z*p.z);
+  float t = (nab.x*(p.x - a.x) + nab.y*(p.y - a.y) + nab.z*(p.z - a.z))/(nab.x * nab.x + nab.y * nab.y + nab.z * nab.z);
+  PVector intersection = PVector.add(a, PVector.mult(nab, t));
+  PVector interP = PVector.sub(p, intersection);
+
+  if (interP.x*interP.x + interP.y*interP.y + interP.z*interP.z > radius * radius)
     return false;
+
+  boolean output = false;
   if (ab.x != 0) {
-    if (ab.x > 0 ? (intersect.x >= a.x && intersect.x <= b.x) : (intersect.x <= a.x && intersect.x >= b.x)) {
-      return true;
+    if (ab.x > 0 ? (intersection.x >= a.x && intersection.x <= b.x) : (intersection.x <= a.x && intersection.x >= b.x)) {
+      output = true;
     }
   } else if (ab.y != 0) {
-    if (ab.y > 0 ? (intersect.y >= a.y && intersect.y <= b.y) : (intersect.y <= a.y && intersect.y >= b.y)) {
-      return true;
+    if (ab.y > 0 ? (intersection.y >= a.y && intersection.y <= b.y) : (intersection.y <= a.y && intersection.y >= b.y)) {
+      output = true;
     }
   } else {
-    if (ab.z > 0 ? (intersect.z >= a.z && intersect.z <= b.z) : (intersect.z <= a.z && intersect.z >= b.z)) {
-      return true;
+    if (ab.z > 0 ? (intersection.z >= a.z && intersection.z <= b.z) : (intersection.z <= a.z && intersection.z >= b.z)) {
+      output = true;
     }
   }
-  return false;
+
+  if (output) {
+    log("intersect edge");
+
+    interP = interP.normalize();
+    PVector newPos = PVector.add(intersection, PVector.mult(interP, radius));
+    Object3D parent = s.getParent();
+    log("old pos "+p+" new pos "+newPos);
+    parent.setPosition(newPos);
+
+    PVector velocity = parent.getVelocity();
+    PVector newVelocity = PVector.sub(velocity, PVector.mult(interP, 2*interP.dot(velocity)));
+    newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
+    parent.setVelocity(newVelocity);
+    log("oldVelocity "+velocity+" new vel "+newVelocity);
+    println();
+  }
+
+  return output;
 }
 
 String arrayToString(float[] array) {

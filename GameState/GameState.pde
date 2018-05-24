@@ -1,4 +1,4 @@
-import java.util.*; //<>// //<>// //<>//
+import java.util.*; //<>// //<>//
 
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
@@ -7,6 +7,8 @@ float angLR = 0;
 int d = 1000;
 // -----------------------------------------------------------------
 
+final static PVector AXIS_OBJECT3D = new PVector(0, -1, 0);
+final static PVector ORIGIN_OBJECT3D = new PVector(0, 0, 0);
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;//re-check the same item in one frame after a collision
 static final int WALL_SIZE = 500;
 static final float EPSILON_COLLISION_TRIANGLE = 0.01f;
@@ -70,10 +72,13 @@ void setup() {
 
   mObjects.add(createDefaultBalloon(new PVector(120f, 130f, 0)));
   mObjects.add(createDefaultBalloon(new PVector(250f, 130f, 0)));
-  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 0)));
-  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, -150)));
+  mObjects.add(createDefaultBalloon(new PVector(400f, 130f, 0)));
+  mObjects.add(createDefaultBalloon(new PVector(250, 400f, -150)));
+  mObjects.add(createDefaultBalloon(new PVector(250, 550f, 20)));
+  mObjects.add(createDefaultBalloon(new PVector(250, 700f, 20)));
+  mObjects.add(createDefaultBalloon(new PVector(250, 850f, 20)));
+  mObjects.add(createDefaultBalloon(new PVector(250, 1000f, 20)));
   //mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 240)));
-  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 240)));
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
    o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
    o1.setShape(balloon);
@@ -212,11 +217,15 @@ boolean collides(SphereCollider s1, SphereCollider s2)
         PVector oldPos = o1.getOldPosition();
         PVector pos1 = PVector.add(oldPos, PVector.sub(o1.getPosition(), oldPos).mult(sol));
         o1.setPosition(pos1);
+        o1.setRot(PVector.add(o1.getOldRot(), PVector.sub(o1.getRot(), o1.getOldRot()).mult(sol)));
 
         Object3D o2 = s2.getParent();
         oldPos = o2.getOldPosition();
         PVector pos2 = PVector.add(oldPos, PVector.sub(o2.getPosition(), oldPos).mult(sol));
         o2.setPosition(pos2);
+        o2.setRot(PVector.add(o2.getOldRot(), PVector.sub(o2.getRot(), o2.getOldRot()).mult(sol)));
+        
+        println("distance min "+(s1.getRadius() + s2.getRadius())+" real distance "+PVector.sub(pos2, pos1).mag());
 
         //bouncing
         float speed1 = o1.getVelocity().mag();
@@ -229,11 +238,11 @@ boolean collides(SphereCollider s1, SphereCollider s2)
         if (!o1.isFloating()) {
           float velocity1 = (bounce*mass2*(speed2 - speed1) + mass1 * speed1 + mass2 * speed2)/(mass1 + mass2);
           log("v1 "+velocity1);
-          o1.setVelocity(PVector.mult(dir, velocity1));
+          o1.setVelocity(PVector.mult(dir, velocity1), s1.getPosition());
         }
         if (!o2.isFloating()) {
           float velocity2 = (bounce*mass1*(speed1 - speed2) + mass1 * speed1 + mass2 * speed2)/(mass1 + mass2);
-          o2.setVelocity(PVector.mult(dir, -velocity2));
+          o2.setVelocity(PVector.mult(dir, -velocity2), s2.getPosition());
         }
       }
       return true;
@@ -269,7 +278,7 @@ void translate(PVector p) {
 
 Object3D createDefaultBalloon(PVector position) {
   //volumic mass 0.169 is for heliumy
-  Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+  Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0), 100, 0.7);
   o1.setShape(balloon);
 
   Set<SphereCollider> mChildren = new HashSet();
@@ -280,7 +289,7 @@ Object3D createDefaultBalloon(PVector position) {
   mChildren.add(new SphereCollider(new PVector(-3, 26, 5.2), 30, o1));
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 65, o1, mChildren));
 
-  return o1; //<>//
+  return o1;
 }
 
 //Create default square shaped wall of size 500x500
@@ -376,7 +385,7 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
 
   PVector oldCenter = s.getAbsolutePosition(true);
   PVector velocity = PVector.sub(center, oldCenter);
-  float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity); //<>//
+  float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity);
   if (t0 > 1 + OVER_BACKTRACKING_TRIANGLE || t0 < 0 - OVER_BACKTRACKING_TRIANGLE)
     return false;
   PVector intersection = PVector.sub(oldCenter, normal).add(PVector.mult(velocity, t0));
@@ -392,7 +401,10 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
     PVector newVelocity = PVector.sub(velocity, PVector.mult(normal, 2*normal.dot(velocity)));
     newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce());
     log("oldVelocity "+parent.getVelocity()+" new vel "+newVelocity);
-    parent.setVelocity(newVelocity);
+    parent.setVelocity(newVelocity, s.getPosition());
+    
+    if(t0 >= 0 && t0 <= 1)
+      parent.setRot(PVector.add(parent.getOldRot(), PVector.sub(parent.getRot(), parent.getOldRot()).mult(t0)));
 
     return true;
   }
@@ -435,7 +447,7 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
       PVector velocity = parent.getVelocity();
       PVector newVelocity = PVector.sub(velocity, PVector.mult(interCenter, 2*interCenter.dot(velocity)));
       newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
-      parent.setVelocity(newVelocity);
+      parent.setVelocity(newVelocity, s.getPosition());
       log("oldVelocity "+velocity+" new vel "+newVelocity);
 
       return true;
@@ -493,7 +505,7 @@ boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector a
     PVector velocity = parent.getVelocity();
     PVector newVelocity = PVector.sub(velocity, PVector.mult(interP, 2*interP.dot(velocity)));
     newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
-    parent.setVelocity(newVelocity);
+    parent.setVelocity(newVelocity, s.getPosition());
     log("oldVelocity "+velocity+" new vel "+newVelocity);
   }
 
@@ -539,4 +551,41 @@ void keyPressed() {
   //eyeX = (width/2)-d*(sin(radians(angLR)));
   println("angUDle "+angUD+": "+eyeX+" / "+eyeY+" / "+eyeZ);
 }
-// --------------------------------------------------
+
+//project a point on a line
+PVector projectPointOnLine(PVector point, PVector line, PVector pointLine){ 
+  float t = (line.x*(point.x - pointLine.x) + line.y*(point.y - pointLine.y) + line.z*(point.z - pointLine.z))/(line.x * line.x + line.y * line.y + line.z * line.z);
+  return PVector.add(pointLine, PVector.mult(line, t));
+}
+
+PVector rot(PVector rot, PVector toRot){
+    float x = rot.x;
+    float y = rot.y;
+    float z = rot.z;
+
+    float[][] matrixX = new float[3][3];
+    matrixX[0] = new float[]{1, 0, 0, 0};
+    matrixX[1] = new float[]{0, cos(x), -sin(x), 0};
+    matrixX[2] = new float[]{0, sin(x), cos(x), 0};
+
+
+    float[][] matrixY = new float[3][3];
+    matrixY[0] = new float[]{ cos(y), 0, sin(y)};
+    matrixY[1] = new float[]{0, 1, 0};
+    matrixY[2] = new float[]{-sin(y), 0, cos(y)};
+
+
+    float[][] matrixZ = new float[3][3];
+    matrixZ[0] = new float[]{cos(z), -sin(z), 0};
+    matrixZ[1] = new float[]{sin(z), cos(z), 0};
+    matrixZ[2] = new float[]{0, 0, 1};
+
+    
+
+    PVector out = new PVector();
+    toMatrix(matrixX).mult(toRot, out);
+    toMatrix(matrixY).mult(out, out);
+    toMatrix(matrixZ).mult(out, out);
+    
+    return out;
+}

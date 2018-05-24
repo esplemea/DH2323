@@ -46,7 +46,7 @@ public class SphereCollider {
   //boolean oldPosition to say if relative to old or new position
   PVector getAbsolutePosition(boolean oldPosition)
   {
-    PVector rot = mParent.getRot();
+    PVector rot = oldPosition ? mParent.getOldRot() : mParent.getRot();
     float x = rot.x;
     float y = rot.y;
     float z = rot.z;

@@ -88,7 +88,7 @@ class Object3D {
       float magn = mVelocity.mag()*dt;
       float rotX = sin(mRot.x) * magn * ROT_VEL_DECELERATION * (mRot.x < PI ? -1 : 1);
       float rotZ = sin(mRot.z) * magn * ROT_VEL_DECELERATION * (mRot.z < PI ? -1 : 1);
-      mRotVelocity.add(new PVector(rotX, 0, rotZ)); //<>//
+      mRotVelocity.add(new PVector(rotX, 0, rotZ));
       //rot resistance (air resistance/frottements)
       mRotVelocity = PVector.add(PVector.mult(mRotVelocity, 1 - dt), PVector.mult(mRotVelocity, dt * ROT_RESISTANCE));
     }

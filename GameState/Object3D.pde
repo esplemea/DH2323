@@ -141,7 +141,12 @@ class Object3D {
     mVelocity = velocity;
   }
   
-  void setVelocity(PVector velocity, PVector collisionCenterRelative) {        
+  void setVelocity(PVector velocity, PVector collisionCenterRelative) {   
+    if(mLengthTorque == -1){
+      setVelocity(velocity);
+      return;
+    }
+    
     PVector centerOnAxis = projectPointOnLine(collisionCenterRelative, AXIS_OBJECT3D, ORIGIN_OBJECT3D);
     
     PVector velocityWithRot = rot(PVector.mult(mRot, -1), velocity);

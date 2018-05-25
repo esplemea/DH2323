@@ -16,10 +16,13 @@ static final float OVER_BACKTRACKING_TRIANGLE = 10f;
 static final float DISTANCE_MIN_SPHERE_COLLIDERS = 2;
 static final int MAX_ITER = 10;
 static long lastTime = 0;
+PImage bground;
 int k = 0;
+String[] balloonNames = new String[]{"ballon-stripped-centered.obj", "ballon-stripped-centered-blue.obj","ballon-stripped-centered-green.obj","ballon-stripped-centered-orange.obj","ballon-stripped-centered-purple.obj"};
 
 static List<Object3D> mObjects;
 PShape balloon;
+List<PShape> balloons;
 PShape wall;
 PShape roofWall;
 
@@ -38,7 +41,9 @@ void settings() {
 }
 
 void setup() {
-  background(0);
+  bground = loadImage("vaporwave.jpg");
+  bground.resize(width,height);
+  background(bground);
   
   eyeX = (width/2)-d*(sin(radians(angLR)));
   eyeY = (height/2)-d*(sin(radians(angUD)));
@@ -46,6 +51,11 @@ void setup() {
 
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
+  balloons = new ArrayList<PShape>();
+  for(int i = 0; i < balloonNames.length; ++i){
+    balloons.add(loadShape(balloonNames[i]));
+  }
+  
   wall = createShape();
   wall.beginShape();
   wall.noStroke();
@@ -101,8 +111,8 @@ void setup() {
 
 // Update is called once per frame
 void draw () {
+  background(bground);
   fill(255);
-  background(0);
   //directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
   //ambientLight(102,102,102);
   lights();
@@ -281,7 +291,7 @@ void translate(PVector p) {
 Object3D createDefaultBalloon(PVector position) { //<>//
   //volumic mass 0.169 is for heliumy
   Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0), 100, 0.7);
-  o1.setShape(balloon);
+  o1.setShape(balloons.get(new Random().nextInt(balloons.size())));
 
   Set<SphereCollider> mChildren = new HashSet();
   mChildren.add(new SphereCollider(new PVector(0, -15, 0), 50, o1));

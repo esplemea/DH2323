@@ -241,12 +241,12 @@ boolean collides(SphereCollider s1, SphereCollider s2)
 {
   if (s1.isRoot() && s2.isRoot())
   {
-    if (s1.getVertices() != null && s2.getVertices() != null)
+    if (s1.getTriangles() != null && s2.getTriangles() != null)
       return false;
-    else if (s1.getVertices() != null) {
-      goThroughVerticesCollision(s2, s1.getVertices());
-    } else if (s2.getVertices() != null) {
-      goThroughVerticesCollision(s1, s2.getVertices());
+    else if (s1.getTriangles() != null) {
+      goThroughVerticesCollision(s2, s1.getTriangles());
+    } else if (s2.getTriangles() != null) {
+      goThroughVerticesCollision(s1, s2.getTriangles());
     } else if (s1.isColliding(s2)) {
       PVector oldPos1 = s1.getAbsolutePosition(true);
       PVector newPos1 = s1.getAbsolutePosition(false);
@@ -362,9 +362,9 @@ Object3D createWall(PVector position, PVector rot) {
   Object3D o1 = new Object3D(position, false, 0, 0, 1, new PVector(0, 0, 0), new PVector(0, 0, 0), rot);
   float radius = (float)(Math.pow(WALL_SIZE*WALL_SIZE/2, 0.5));
 
-  Set<Vertice> mVertices = new HashSet();
-  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
-  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1)); //<>//
+  Set<Triangle> mVertices = new HashSet();
+  mVertices.add(new Triangle(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
+  mVertices.add(new Triangle(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1)); //<>//
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>// //<>//
   o1.setShape(wall);
@@ -376,8 +376,8 @@ Object3D createRoofWall(PVector position, PVector rot) {
   Object3D o1 = new Object3D(position, false, 0, 0, 1, new PVector(0, 0, 0), new PVector(0, 0, 0), rot);
   float radius = (float)(Math.pow(WALL_SIZE*WALL_SIZE/2, 0.5));
 
-  Set<Vertice> mVertices = new HashSet();
-  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, -WALL_SIZE/2, WALL_SIZE/2), o1));
+  Set<Triangle> mVertices = new HashSet();
+  mVertices.add(new Triangle(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, -WALL_SIZE/2, WALL_SIZE/2), o1));
 
   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>//
   o1.setShape(roofWall);
@@ -434,12 +434,12 @@ PMatrix3D toMatrix(float[][] matrix) {
     0, 0, 0, 1);
 }
 //<>//
-boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
-  for (Vertice v : vertices) { //<>// //<>// //<>//
+boolean goThroughVerticesCollision(SphereCollider s, Set<Triangle> vertices) {
+  for (Triangle v : vertices) { //<>// //<>// //<>//
     if (isCollidingSurface(s, v))
       return true;
   }
-  for (Vertice v : vertices) {
+  for (Triangle v : vertices) {
     if (isCollidingEdges(s, v))
       return true;
   }
@@ -451,7 +451,7 @@ void setNewCenter(Object3D parent, PVector absoluteCenterCollider, PVector newCe
 } //<>//
 
 //the object containing the Vertice v is considered as floating, hence no mass, moving or backtracking!
-boolean isCollidingSurface(SphereCollider s, Vertice v) {
+boolean isCollidingSurface(SphereCollider s, Triangle v) {
   PVector[] vertices = v.getAbsolutePosition(false); //<>//
   PVector center = s.getAbsolutePosition(false); //<>//
 
@@ -498,7 +498,7 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
   return false;
 }
 
-boolean isCollidingEdges(SphereCollider s, Vertice v) {
+boolean isCollidingEdges(SphereCollider s, Triangle v) {
   PVector[] vertices = v.getAbsolutePosition(false);
   PVector center = s.getAbsolutePosition(false);
   PVector v1v2 = PVector.sub(vertices[1], vertices[0]);
@@ -554,7 +554,7 @@ boolean checkPointInTriangle(PVector p, PVector a, PVector b, PVector c, PVector
 }
 
 //p is the center to project on line ab and check if between them
-boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector ab, float radius, SphereCollider s, Vertice v) {
+boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector ab, float radius, SphereCollider s, Triangle v) {
   PVector nab = ab.normalize();
   //float c = -(nab.x*p.x+nab.y*p.y+nab.z*p.z);
   float t = (nab.x*(p.x - a.x) + nab.y*(p.y - a.y) + nab.z*(p.z - a.z))/(nab.x * nab.x + nab.y * nab.y + nab.z * nab.z);

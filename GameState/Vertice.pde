@@ -1,9 +1,9 @@
-public class Vertice {
+public class Triangle {
   Object3D mParent;
   PVector mV1, mV2, mV3;
   
   //Relative positions of the vertexes
-  Vertice(PVector v1, PVector v2, PVector v3, Object3D parent) {
+  Triangle(PVector v1, PVector v2, PVector v3, Object3D parent) {
     mV1 = v1;
     mV2 = v2;
     mV3 = v3;
@@ -53,7 +53,7 @@ public class Vertice {
     return out;
   }
   
-  boolean isColliding(Vertice that){
+  boolean isColliding(Triangle that){
     //TODO using minkowski
     return false;
   }

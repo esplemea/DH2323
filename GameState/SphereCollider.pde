@@ -5,7 +5,7 @@ public class SphereCollider {
   private PVector mPosition;
   private float mRadius;
   private Set<SphereCollider> mChildren;
-  private Set<Vertice> mVertices;
+  private Set<Triangle> mTriangles;
 
 
   public SphereCollider(PVector position, float radius, Object3D parent, Set<SphereCollider> children)
@@ -14,7 +14,7 @@ public class SphereCollider {
     mRadius = radius;
     mChildren = children;
     mParent = parent;
-    mVertices = null;
+    mTriangles = null;
   }
 
   /**
@@ -24,13 +24,13 @@ public class SphereCollider {
     this(position, radius, parent, null);
   }
 
-  public SphereCollider(PVector position, float radius, Set<Vertice> children, Object3D parent)
+  public SphereCollider(PVector position, float radius, Set<Triangle> children, Object3D parent)
   {
     mPosition = position;
     mRadius = radius;
     mChildren = null;
     mParent = parent;
-    mVertices = children;
+    mTriangles = children;
   }
 
   public float getRadius()
@@ -98,10 +98,8 @@ public class SphereCollider {
     return mParent;
   }
 
-  Set<Vertice> getVertices()
+  Set<Triangle> getTriangles()
   {
-    return mVertices;
-  }
-
-  
+    return mTriangles;
+  } 
 }

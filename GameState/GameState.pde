@@ -1,5 +1,5 @@
 import java.util.*;
-static final boolean SPHERES = true;
+static final boolean SPHERES = false;
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
 float angUD = 0.1f;
@@ -21,7 +21,7 @@ static Set<Object3D> roomObjects;
 
 PImage bground;
 int k = 0;
-String[] balloonNames = new String[]{"ballon-stripped-centered.obj", "ballon-stripped-centered-blue.obj","ballon-stripped-centered-green.obj","ballon-stripped-centered-orange.obj","ballon-stripped-centered-purple.obj"};
+String[] balloonNames = new String[]{"ballon-stripped-centered.obj", "ballon-stripped-centered-blue.obj", "ballon-stripped-centered-green.obj", "ballon-stripped-centered-orange.obj", "ballon-stripped-centered-purple.obj"};
 
 static List<Object3D> mObjects;
 PShape balloon;
@@ -46,9 +46,9 @@ void settings() {
 void setup() {
   roomObjects = new HashSet();
   bground = loadImage("vaporwave.jpg");
-  bground.resize(width,height);
+  bground.resize(width, height);
   background(bground);
-  
+
   eyeX = (width/2)-d*(sin(radians(angLR)));
   eyeY = (height/2)-d*(sin(radians(angUD)));
   eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
@@ -56,10 +56,10 @@ void setup() {
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
   balloons = new ArrayList<PShape>();
-  for(int i = 0; i < balloonNames.length; ++i){
+  for (int i = 0; i < balloonNames.length; ++i) {
     balloons.add(loadShape(balloonNames[i]));
   }
-  
+
   wall = createShape();
   wall.beginShape();
   wall.noStroke();
@@ -97,16 +97,16 @@ void setup() {
     mObjects.add(createDefaultBalloon(new PVector(400f, 130f, 0)));
 
     mObjects.add(createDefaultBalloon(new PVector(250, 400f, -150)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 550f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 700f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 850f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 1000f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(220, 550f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(190, 700f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(160, 850f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(130, 1000f, 20)));
 
-    mObjects.add(createDefaultBalloon(new PVector(250, 400f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 550f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 700f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 850f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(250, 1000f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(280, 400f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(310, 550f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(340, 700f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(370, 850f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(400, 1000f, 170)));
   }
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
    o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
@@ -182,26 +182,12 @@ void draw () {
     }
 
     int nbObjects = mObjects.size();
-    int looping = 0;
-    boolean collided = false;
-    for (int i = 0; i < nbObjects; ++i)
-    {
-      for (int j = i + 1; j < nbObjects; ++j)
-      {
-        SphereCollider s1 = mObjects.get(i).getSphereCollider();
-        SphereCollider s2 = mObjects.get(j).getSphereCollider();
-        if (collides(s1, s2)) {
-          if (looping++ < THRESHOLD_COLLIDE_AGAIN_OBJECTS) {
-            --i;
-            collided = true;
-          }
-          break;
-        }
-      }
-      if (!collided)
-        looping = 0;
-    }
+    Set<Integer> collided = new HashSet();
+    for (int i = 0; i< nbObjects; ++i)
+      collided.add(i);
+    recurCollisions(collided, 0);
   }
+
   for (Object3D o : mObjects) {
     pushMatrix();
     translate(o.getPosition());
@@ -215,7 +201,7 @@ void draw () {
       shape(toDraw);
     popMatrix();
   }
-  //println("DRAW OPS TOTAL TIME: "+(System.currentTimeMillis()-newTime)+"ms");
+  println("DRAW OPS TOTAL TIME: "+(System.currentTimeMillis()-newTime)+"ms");
   /*
   directionalLight(50, 100, 125, 0, 1, 0);
    //ambientLight(102, 102, 102);
@@ -228,6 +214,25 @@ void draw () {
 
 void mouseClicked() {
   mouseClicked = true;
+}
+
+void recurCollisions(Set<Integer> collided, int iter) {
+  if (iter == THRESHOLD_COLLIDE_AGAIN_OBJECTS)
+    return;
+  Set<Integer> nextCollided = new HashSet();
+  int size = mObjects.size();
+  for (Integer i : collided) {
+    for (int j = 0; j < size; ++j) {
+      SphereCollider s1 = mObjects.get(i).getSphereCollider();
+      SphereCollider s2 = mObjects.get(j).getSphereCollider();
+      if (collides(s1, s2)) {
+        nextCollided.add(i);
+        nextCollided.add(j);
+        break;
+      }
+    }
+  }
+  recurCollisions(nextCollided, ++iter);
 }
 
 boolean collides(SphereCollider s1, SphereCollider s2)
@@ -250,7 +255,7 @@ boolean collides(SphereCollider s1, SphereCollider s2)
 
       float distance = s1.getRadius() + s2.getRadius();
       if (PVector.sub(oldPos1, oldPos2).mag() < distance) {
-        println("Objects inside on another!");
+        //println("Objects inside on another!");
         return false;
       }
       float t = findT(distance, oldPos1, oldPos2, v1, v2, 0, 1, 0);
@@ -336,7 +341,7 @@ void translate(PVector p) {
 
 Object3D createDefaultBalloon(PVector position) { //<>//
   //volumic mass 0.169 is for heliumy
-  Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0), 100, 0.7);
+  Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0), 130, 0.7);
   o1.setShape(balloons.get(new Random().nextInt(balloons.size())));
 
   Set<SphereCollider> mChildren = new HashSet();

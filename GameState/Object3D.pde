@@ -1,10 +1,16 @@
 class Object3D {
+  final static int QUEUE_SIZE = 10;
+  final static float THRESHOLD_VEL_STACK = 2.5f;
   final static float MASS_VOLUMIC_AIR = 1.225;
   final static float GRAVITY = 9.81f;
   final static float ROT_VEL_DECELERATION = PI/500;
-  final static float SLOW_ROT = 0.15f;
+  final static float SLOW_ROT = 0.3f;
   final static float ROT_RESISTANCE = 0.4f;
   final static float THRESHOLD_ROT_VEL_MIN = PI/1000;
+  final static float ARCHIMEDE_FACTOR = 2;
+  Queue<Float> mLastVelocities;
+  float mSumVelocities = 0;
+  int mStackSize = 0;
   PVector mPosition;
   PVector mOldPosition;
   boolean mFloating;
@@ -31,11 +37,12 @@ class Object3D {
     mAccel = accel;
     mVolumicMass = volumicMass;
     if (!floating) {
-      mAccel.y -= GRAVITY * (volumicMass) * (4/3 * PI * 1.5 * 1.5 * 1.5);
+      mAccel.y -= ARCHIMEDE_FACTOR * GRAVITY * (volumicMass) * (4/3 * PI * 1.5 * 1.5 * 1.5);
     }
     mRot = rot;
     mOldRot = rot;
     mRotVelocity = new PVector(0, 0, 0);
+    mLastVelocities = new LinkedList();
   }
 
   //constructor with torque
@@ -80,12 +87,30 @@ class Object3D {
   {
     //mMovingCollider = null;
     if (!mFloating) {
+      float magn = mVelocity.mag();
+      mLastVelocities.add(magn);
+      mSumVelocities += magn;
+      boolean doVelocityStuff = true;
+      if(mStackSize < QUEUE_SIZE){
+        ++mStackSize;
+      }else{
+        mSumVelocities -= mLastVelocities.poll();
+        //println(mSumVelocities);
+        if(mSumVelocities < THRESHOLD_VEL_STACK)
+          doVelocityStuff = false;
+      }
+      
+      
       mOldPosition = mPosition.copy();
-      mPosition = PVector.add(mPosition, PVector.mult(mAccel, .5 * dt * dt).add(PVector.mult(mVelocity, dt)));
-      mVelocity.add(PVector.mult(mAccel, dt));
+      if(doVelocityStuff){
+        mPosition = PVector.add(mPosition, PVector.mult(mAccel, .5 * dt * dt).add(PVector.mult(mVelocity, dt)));
+        mVelocity.add(PVector.mult(mAccel, dt));
+      }
+      
+      magn *= dt;
       mOldRot = mRot;
       mRot = PVector.add(mRot, mRotVelocity);
-      float magn = mVelocity.mag()*dt;
+      
       float rotX = sin(mRot.x) * magn * ROT_VEL_DECELERATION * (mRot.x < PI ? -1 : 1);
       float rotZ = sin(mRot.z) * magn * ROT_VEL_DECELERATION * (mRot.z < PI ? -1 : 1);
       mRotVelocity.add(new PVector(rotX, 0, rotZ));

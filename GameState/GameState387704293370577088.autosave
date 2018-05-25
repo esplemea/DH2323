@@ -1,4 +1,4 @@
-import java.util.*; //<>// //<>// //<>// //<>// //<>//
+import java.util.*; //<>// //<>//
 
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
@@ -13,8 +13,6 @@ static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;//re-check the same item in
 static final int WALL_SIZE = 500;
 static final float EPSILON_COLLISION_TRIANGLE = 0.01f;
 static final float OVER_BACKTRACKING_TRIANGLE = 10f;
-static final float DISTANCE_MIN_SPHERE_COLLIDERS = 2;
-static final int MAX_ITER = 10;
 static long lastTime = 0;
 int k = 0;
 
@@ -39,10 +37,10 @@ void settings() {
 
 void setup() {
   background(0);
-  
-  eyeX = (width/2)-d*(sin(radians(angLR)));
+
+  eyeX = width/2;
   eyeY = (height/2)-d*(sin(radians(angUD)));
-  eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
+  eyeZ = d*cos(radians(angUD));
 
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
@@ -75,18 +73,11 @@ void setup() {
   mObjects.add(createDefaultBalloon(new PVector(120f, 130f, 0)));
   mObjects.add(createDefaultBalloon(new PVector(250f, 130f, 0)));
   mObjects.add(createDefaultBalloon(new PVector(400f, 130f, 0)));
-  
   mObjects.add(createDefaultBalloon(new PVector(250, 400f, -150)));
   mObjects.add(createDefaultBalloon(new PVector(250, 550f, 20)));
   mObjects.add(createDefaultBalloon(new PVector(250, 700f, 20)));
   mObjects.add(createDefaultBalloon(new PVector(250, 850f, 20)));
   mObjects.add(createDefaultBalloon(new PVector(250, 1000f, 20)));
-  
-  mObjects.add(createDefaultBalloon(new PVector(250, 400f, 170)));
-  mObjects.add(createDefaultBalloon(new PVector(250, 550f, 170)));
-  mObjects.add(createDefaultBalloon(new PVector(250, 700f, 170)));
-  mObjects.add(createDefaultBalloon(new PVector(250, 850f, 170)));
-  mObjects.add(createDefaultBalloon(new PVector(250, 1000f, 170)));
   //mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 240)));
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
    o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
@@ -100,7 +91,7 @@ void setup() {
 }
 
 // Update is called once per frame
-void draw () {
+void draw () {  
   fill(255);
   background(0);
   //directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
@@ -163,7 +154,7 @@ void draw () {
       shape(toDraw);
     popMatrix();
   }
-  println("DRAW OPS TOTAL TIME: "+(System.currentTimeMillis()-newTime)+"ms");
+
   /*
   directionalLight(50, 100, 125, 0, 1, 0);
    //ambientLight(102, 102, 102);
@@ -189,32 +180,26 @@ boolean collides(SphereCollider s1, SphereCollider s2)
       PVector newPos1 = s1.getAbsolutePosition(false);
       PVector oldPos2 = s2.getAbsolutePosition(true);
       PVector newPos2 = s2.getAbsolutePosition(false);
-      PVector v1 = PVector.sub(newPos1, oldPos1);
-      PVector v2 = PVector.sub(newPos2, oldPos2);
+      PVector v1 = PVector.sub(newPos2, oldPos2).add(newPos1);//.sub(oldPos1);
+      PVector v2 = PVector.sub(oldPos2, oldPos1);
 
-      float distance = s1.getRadius() + s2.getRadius();
-      if (PVector.sub(oldPos1, oldPos2).mag() < distance){
-        println("Objects inside on another!");
-        return false;
-      }
-      float t = findT(distance, oldPos1, oldPos2, v1, v2, 0, 1, 0);
-      
-      //println("distance min "+distance+" real distance "+PVector.sub(PVector.add(oldPos1, PVector.mult(v1, t)), PVector.add(oldPos2, PVector.mult(v2, t))).mag());
+      float sol = 
 
       //Move the objects backward
+      log("moving objects "+sol);
       Object3D o1 = s1.getParent();
       PVector oldPos = o1.getOldPosition();
-      PVector pos1 = PVector.add(oldPos, PVector.sub(o1.getPosition(), oldPos).mult(t));
+      PVector pos1 = PVector.add(oldPos, PVector.sub(o1.getPosition(), oldPos).mult(sol));
       o1.setPosition(pos1);
-      o1.setRot(PVector.add(o1.getOldRot(), PVector.sub(o1.getRot(), o1.getOldRot()).mult(t)));
+      o1.setRot(PVector.add(o1.getOldRot(), PVector.sub(o1.getRot(), o1.getOldRot()).mult(sol)));
 
       Object3D o2 = s2.getParent();
       oldPos = o2.getOldPosition();
-      PVector pos2 = PVector.add(oldPos, PVector.sub(o2.getPosition(), oldPos).mult(t));
+      PVector pos2 = PVector.add(oldPos, PVector.sub(o2.getPosition(), oldPos).mult(sol));
       o2.setPosition(pos2);
-      o2.setRot(PVector.add(o2.getOldRot(), PVector.sub(o2.getRot(), o2.getOldRot()).mult(t)));
+      o2.setRot(PVector.add(o2.getOldRot(), PVector.sub(o2.getRot(), o2.getOldRot()).mult(sol)));
 
-      
+      println("distance min "+(s1.getRadius() + s2.getRadius())+" real distance "+PVector.sub(pos2, pos1).mag());
 
       //bouncing
       float speed1 = o1.getVelocity().mag();
@@ -233,9 +218,8 @@ boolean collides(SphereCollider s1, SphereCollider s2)
         float velocity2 = (bounce*mass1*(speed1 - speed2) + mass1 * speed1 + mass2 * speed2)/(mass1 + mass2);
         o2.setVelocity(PVector.mult(dir, -velocity2), s2.getPosition());
       }
-      return true;
     }
-    return false;
+    return true;
   } else if (s1.isRoot())
   {
     return goThroughCollider(s2, s1);
@@ -249,18 +233,9 @@ boolean collides(SphereCollider s1, SphereCollider s2)
   return goThroughCollider(s1, s2);
 }
 
-float findT(float distance, PVector oldPos1, PVector oldPos2, PVector v1, PVector v2, float tmin, float tmax, int maxIter){
-  if(maxIter == MAX_ITER){
-    return tmin;
-  }
-  float t = tmin + (tmax-tmin)/2;
-  PVector newDistance = PVector.sub(PVector.add(oldPos1, PVector.mult(v1, t)), PVector.add(oldPos2, PVector.mult(v2, t)));
-  if(newDistance.x*newDistance.x + newDistance.y*newDistance.y + newDistance.z*newDistance.z < distance*distance)
-    return findT(distance, oldPos1, oldPos2, v1, v2, tmin, t, ++maxIter);
-  else if(newDistance.mag() < distance + DISTANCE_MIN_SPHERE_COLLIDERS)
-    return t;
-  else
-    return findT(distance, oldPos1, oldPos2, v1, v2, t, tmax, ++maxIter);
+float findT(float diPVector oldPos1, PVector oldPos2, PVector v1, PVector v2, float tmin, float tmax){
+  
+  
 }
 
 boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
@@ -278,7 +253,7 @@ void translate(PVector p) {
   translate(p.x, p.y, p.z);
 }
 
-Object3D createDefaultBalloon(PVector position) { //<>//
+Object3D createDefaultBalloon(PVector position) {
   //volumic mass 0.169 is for heliumy
   Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0), 100, 0.7);
   o1.setShape(balloon);
@@ -303,7 +278,7 @@ Object3D createWall(PVector position, PVector rot) {
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
 
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>//
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
   o1.setShape(wall);
   return o1; //<>//
 }
@@ -324,7 +299,7 @@ Object3D createRoofWall(PVector position, PVector rot) {
 //Create default square shaped wall of size 500x500
 void createRoom(PVector position, PVector rot) {
   mObjects.add(createWall(position.copy().add(new PVector(0, 0, -WALL_SIZE/2)), new PVector(0, 0, 0)));
-  mObjects.add(createWall(position.copy().add(new PVector(0, 0, WALL_SIZE/2)), new PVector(0, 0, 0))); //<>//
+  mObjects.add(createWall(position.copy().add(new PVector(0, 0, WALL_SIZE/2)), new PVector(0, 0, 0)));
   mObjects.add(createWall(position.copy().add(new PVector(-WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
   mObjects.add(createWall(position.copy().add(new PVector(WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
 
@@ -349,9 +324,9 @@ PMatrix3D toMatrix(float[][] matrix) {
     matrix[2][0], matrix[2][1], matrix[2][2], 0, 
     0, 0, 0, 1);
 }
- //<>//
+
 boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
-  for (Vertice v : vertices) { //<>// //<>//
+  for (Vertice v : vertices) { 
     if (isCollidingSurface(s, v))
       return true;
   }
@@ -364,12 +339,12 @@ boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
 
 void setNewCenter(Object3D parent, PVector absoluteCenterCollider, PVector newCenter) {
   parent.setPosition(PVector.add(newCenter, PVector.sub(parent.getPosition(), absoluteCenterCollider)));
-} //<>//
+}
 
 //the object containing the Vertice v is considered as floating, hence no mass, moving or backtracking!
 boolean isCollidingSurface(SphereCollider s, Vertice v) {
-  PVector[] vertices = v.getAbsolutePosition(false); //<>//
-  PVector center = s.getAbsolutePosition(false); //<>//
+  PVector[] vertices = v.getAbsolutePosition(false);
+  PVector center = s.getAbsolutePosition(false);
 
   PVector v1v2 = PVector.sub(vertices[1], vertices[0]);
   PVector v1v3 = PVector.sub(vertices[2], vertices[0]);
@@ -420,7 +395,7 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
   PVector v1v2 = PVector.sub(vertices[1], vertices[0]);
   PVector v1v3 = PVector.sub(vertices[2], vertices[0]);
   PVector v2v3 = PVector.sub(vertices[2], vertices[1]);
-  float radius = s.getRadius(); //<>//
+  float radius = s.getRadius();
 
 
   //check for each of the 3 edges that the point is inside of them
@@ -454,7 +429,7 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
 
       return true;
     }
-  } //<>// //<>//
+  } //<>//
   return false;
 }
 
@@ -548,9 +523,9 @@ void keyPressed() {
     angUD=0;
   if (angLR>=360)
     angLR=0;
-  eyeX = (width/2)-d*(sin(radians(angLR)))*cos(radians(angUD));
   eyeY = (height/2)-d*(sin(radians(angUD)));
-  eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
+  eyeZ = d*cos(radians(angUD));
+  //eyeX = (width/2)-d*(sin(radians(angLR)));
   println("angUDle "+angUD+": "+eyeX+" / "+eyeY+" / "+eyeZ);
 }
 

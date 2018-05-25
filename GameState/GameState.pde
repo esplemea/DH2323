@@ -41,7 +41,7 @@ void settings() {
 }
 
 void setup() {
-  bground = loadImage("vaporwave.jpg");
+  bground = loadImage("vaporwave.png");
   bground.resize(width,height);
   background(bground);
   

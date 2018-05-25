@@ -1,0 +1,6 @@
+class Util {
+  public Util() {
+  }
+  
+  
+}

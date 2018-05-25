@@ -1,4 +1,4 @@
-import java.util.*; //<>// //<>// //<>//
+import java.util.*; //<>// //<>// //<>// //<>//
 
 // -----------------------------------------------------------------
 float eyeX, eyeY, eyeZ;
@@ -6,7 +6,7 @@ float angUD = 0;
 float angLR = 0;
 int d = 1000;
 // -----------------------------------------------------------------
- 
+
 static final int THRESHOLD_COLLIDE_INSIDE_OBJECTS = 3;//may be usefull to do collisions multiple times in one fram, need to talk about it...
 static final int THRESHOLD_COLLIDE_AGAIN_OBJECTS = 2;
 static final int WALL_SIZE = 500;
@@ -39,13 +39,13 @@ void setup() {
   eyeX = (width/2)-d*(sin(radians(angLR)));
   eyeY = (height/2)-d*(sin(radians(angUD)));
   eyeZ = d*cos(radians(angUD))*cos(radians(angLR));
-  
+
   noStroke();
   balloon = loadShape("ballon-stripped-centered.obj");
   wall = createShape();
   wall.beginShape();
   wall.noStroke();
-  wall.fill(200,200,255, 100);
+  wall.fill(200, 200, 255, 100);
 
   wall.beginShape();
   wall.vertex(WALL_SIZE/2, WALL_SIZE/2, 0);
@@ -56,11 +56,11 @@ void setup() {
   wall.vertex(-WALL_SIZE/2, WALL_SIZE/2, 0);
   wall.vertex(-WALL_SIZE/2, -WALL_SIZE/2, 0);
   wall.endShape();
-  
+
   roofWall = createShape();
   roofWall.beginShape();
   roofWall.noStroke();
-  roofWall.fill(210,210,210,100);
+  roofWall.fill(210, 210, 210, 100);
   roofWall.vertex(WALL_SIZE/2, 0, 0);
   roofWall.vertex(-WALL_SIZE/2, 0, 0);
   roofWall.vertex(0, -WALL_SIZE/2, WALL_SIZE/2);
@@ -68,14 +68,16 @@ void setup() {
 
   mObjects = new ArrayList<Object3D>();
 
-  mObjects.add(createDefaultSphere());
+  mObjects.add(createDefaultBalloon(new PVector(120f, 130f, 0)));
+  mObjects.add(createDefaultBalloon(new PVector(250f, 130f, 0)));
+  mObjects.add(createDefaultBalloon(new PVector(400f, 400f, 0)));
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
-  o1.setShape(balloon);
-  mObjects.add(o1);*/
+   o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
+   o1.setShape(balloon);
+   mObjects.add(o1);*/
 
-  PVector position = new PVector(250,0,0);
-  PVector rotation = new PVector(0,0.5,0);
+  PVector position = new PVector(250, 0, 0);
+  PVector rotation = new PVector(0, 0.5, 0);
   createRoom(position, rotation);
 }
 
@@ -86,16 +88,16 @@ void draw () {
   //directionalLight(255, 255, 255, 0.1, -0.6, -0.3);
   //ambientLight(102,102,102);
   lights();
-  
+
   // CAMERA:
-  if (eyeX<0){
+  if (eyeZ<0) {
     camera(eyeX, eyeY, eyeZ, 
-    width/2, height/2, 0, 
-    0, -1, 0);
-  }else{
+      width/2, height/2, 0, 
+      0, -1, 0);
+  } else {
     camera(eyeX, eyeY, eyeZ, 
-    width/2, height/2, 0, 
-    0, 1, 0);
+      width/2, height/2, 0, 
+      0, 1, 0);
   }
 
   translate(0, 250, 0);
@@ -251,9 +253,9 @@ void translate(PVector p) {
   translate(p.x, p.y, p.z);
 }
 
-Object3D createDefaultSphere() {
-  //volumic mass 0.169 is for helium
-  Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 0, 0.169f, 0, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+Object3D createDefaultBalloon(PVector position) {
+  //volumic mass 0.169 is for heliumy
+  Object3D o1 = new Object3D(position, false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
   o1.setShape(balloon);
 
   Set<SphereCollider> mChildren = new HashSet();
@@ -276,7 +278,7 @@ Object3D createWall(PVector position, PVector rot) {
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
 
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>//
   o1.setShape(wall);
   return o1; //<>// //<>//
 }
@@ -300,7 +302,7 @@ void createRoom(PVector position, PVector rot) {
   mObjects.add(createWall(position.copy().add(new PVector(0, 0, WALL_SIZE/2)), new PVector(0, 0, 0)));
   mObjects.add(createWall(position.copy().add(new PVector(-WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
   mObjects.add(createWall(position.copy().add(new PVector(WALL_SIZE/2, 0, 0)), new PVector(0, PI/2, 0)));
-  
+
   mObjects.add(createRoofWall(position.copy().add(new PVector(0, -WALL_SIZE/2, -WALL_SIZE/2)), new PVector(0, 0, 0)));
   mObjects.add(createRoofWall(position.copy().add(new PVector(0, -WALL_SIZE/2, WALL_SIZE/2)), new PVector(0, PI, 0)));
   mObjects.add(createRoofWall(position.copy().add(new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0)), new PVector(0, PI/2, 0)));
@@ -322,7 +324,7 @@ PMatrix3D toMatrix(float[][] matrix) {
     matrix[2][0], matrix[2][1], matrix[2][2], 0, 
     0, 0, 0, 1);
 }
-
+ //<>//
 boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
   for (Vertice v : vertices) { //<>// //<>//
     if (isCollidingSurface(s, v))
@@ -332,7 +334,12 @@ boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
     if (isCollidingEdges(s, v))
       return true;
   }
-  return false;}
+  return false;
+}
+
+void setNewCenter(Object3D parent, PVector absoluteCenterCollider, PVector newCenter){
+  parent.setPosition(PVector.add(newCenter, PVector.sub(parent.getPosition(),  absoluteCenterCollider)));
+}
 
 //the object containing the Vertice v is considered as floating, hence no mass, moving or backtracking!
 boolean isCollidingSurface(SphereCollider s, Vertice v) {
@@ -366,12 +373,12 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
     PVector newCenter = PVector.add(oldCenter, PVector.mult(velocity, t0));
     Object3D parent = s.getParent();
     log("old pos "+center+" new pos "+newCenter);
-    parent.setPosition(newCenter);
+    setNewCenter(parent, center, newCenter);
 
     PVector newVelocity = PVector.sub(velocity, PVector.mult(normal, 2*normal.dot(velocity)));
-    newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce());
+    newVelocity = PVector.mult(newVelocity.normalize(), parent.getVelocity().mag() * parent.getBounce() * v.getParent().getBounce()); //<>//
+    log("oldVelocity "+parent.getVelocity()+" new vel "+newVelocity);
     parent.setVelocity(newVelocity);
-    log("oldVelocity "+velocity+" new vel "+newVelocity);
 
     return true;
   }
@@ -404,16 +411,16 @@ boolean isCollidingEdges(SphereCollider s, Vertice v) {
     PVector cp = PVector.sub(vertices[i], center);
     if (cp.x*cp.x + cp.y*cp.y + cp.z*cp.z <= radius * radius) {
       log("intersect vertex "+i);
-        
+
       PVector interCenter = PVector.sub(center, vertices[i]).normalize();
       PVector newPos = PVector.add(vertices[i], PVector.mult(interCenter, radius));
       Object3D parent = s.getParent();
       log("old pos "+center+" new pos "+newPos);
-      parent.setPosition(newPos);
-  
+      setNewCenter(parent, center, newPos);
+
       PVector velocity = parent.getVelocity();
       PVector newVelocity = PVector.sub(velocity, PVector.mult(interCenter, 2*interCenter.dot(velocity)));
-      newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce());
+      newVelocity = PVector.mult(newVelocity, parent.getBounce() * v.getParent().getBounce()); //<>//
       parent.setVelocity(newVelocity);
       log("oldVelocity "+velocity+" new vel "+newVelocity);
       println();
@@ -468,7 +475,7 @@ boolean checkPointInSegmentAndReplace(PVector a, PVector b, PVector p, PVector a
     PVector newPos = PVector.add(intersection, PVector.mult(interP, radius));
     Object3D parent = s.getParent();
     log("old pos "+p+" new pos "+newPos);
-    parent.setPosition(newPos);
+    setNewCenter(parent, p, newPos);
 
     PVector velocity = parent.getVelocity();
     PVector newVelocity = PVector.sub(velocity, PVector.mult(interP, 2*interP.dot(velocity)));
@@ -505,15 +512,15 @@ void keyPressed() {
       angLR -= 5;
     }
     break;
- 
+
   default:
     // !CODED:
     break;
   } // switch
- 
+
   if (angUD>=360)
     angUD=0;
-   if (angLR>=360)
+  if (angLR>=360)
     angLR=0;
   eyeX = (width/2)-d*(sin(radians(angLR)))*cos(radians(angUD));
   eyeY = (height/2)-d*(sin(radians(angUD)));

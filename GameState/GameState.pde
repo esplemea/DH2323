@@ -40,13 +40,13 @@ void removeObject3D(Object3D toRemove)
 }
 
 void settings() {
-  size(500, 500, P3D);
+  size(1000, 1000, P3D);
 }
 
 void setup() {
+  bground = loadImage("vaporwave.png");
   roomObjects = new HashSet();
-  bground = loadImage("vaporwave.jpg");
-  bground.resize(width, height);
+  bground.resize(width,height);
   background(bground);
 
   eyeX = (width/2)-d*(sin(radians(angLR)));
@@ -92,28 +92,28 @@ void setup() {
     mObjects.add(o1);
   } else {
 
-    mObjects.add(createDefaultBalloon(new PVector(120f, 130f, 0)));
-    mObjects.add(createDefaultBalloon(new PVector(250f, 130f, 0)));
-    mObjects.add(createDefaultBalloon(new PVector(400f, 130f, 0)));
+    mObjects.add(createDefaultBalloon(new PVector(-130, 130f, 0)));
+    mObjects.add(createDefaultBalloon(new PVector(0, 130f, 0)));
+    mObjects.add(createDefaultBalloon(new PVector(150, 130f, 0)));
 
-    mObjects.add(createDefaultBalloon(new PVector(250, 400f, -150)));
-    mObjects.add(createDefaultBalloon(new PVector(220, 550f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(190, 700f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(160, 850f, 20)));
-    mObjects.add(createDefaultBalloon(new PVector(130, 1000f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(0, 400f, -150)));
+    mObjects.add(createDefaultBalloon(new PVector(-30, 550f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(-60, 700f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(-90, 850f, 20)));
+    mObjects.add(createDefaultBalloon(new PVector(-120, 1000f, 20)));
 
-    mObjects.add(createDefaultBalloon(new PVector(280, 400f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(310, 550f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(340, 700f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(370, 850f, 170)));
-    mObjects.add(createDefaultBalloon(new PVector(400, 1000f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(30, 400f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(60, 550f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(90, 700f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(120, 850f, 170)));
+    mObjects.add(createDefaultBalloon(new PVector(150, 1000f, 170)));
   }
   /*Object3D o1 = new Object3D(new PVector(120f, 130f, 0), false, 10, 0.169f, 0.9f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
    o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 30, o1));
    o1.setShape(balloon);
    mObjects.add(o1);*/
 
-  PVector position = new PVector(250, 0, 0);
+  PVector position = new PVector(0, 0, 0);
   PVector rotation = new PVector(0, 0.5, 0);
   createRoom(position, rotation);
 
@@ -148,6 +148,8 @@ void draw () {
         0, 1, 0);
     }
   }
+  
+  translate(width/2, height/2, 0); //centering
 
   if (gamePaused && mouseClicked) {
     print("pressed");
@@ -155,21 +157,21 @@ void draw () {
     destroyRoom();
 
     if (SPHERES) {
-      Object3D o1 = new Object3D(new PVector(mouseX*1.7 - 150, 350, -mouseY*1.7 + 380), false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
+      Object3D o1 = new Object3D(new PVector(mouseX*0.8 - 400, 350, -mouseY*0.8 + 400), false, 10, 0.169f, 0.5f, new PVector(0, 0, 0), new PVector(0, 0, 0), new PVector(0, 0, 0));
       o1.addCollider(new SphereCollider(new PVector(0, 0, 0), 65, o1));
       mObjects.add(o1);
     } else {
-      mObjects.add(createDefaultBalloon(new PVector(mouseX*1.7 - 150, 350, -mouseY*1.7 + 380)));
+      mObjects.add(createDefaultBalloon(new PVector(mouseX*0.8 - 400, 350, -mouseY*0.8 + 400)));
     }
 
     destroyRoom();
-    PVector position = new PVector(250, 0, 0);
+    PVector position = new PVector(0, 0, 0);
     PVector rotation = new PVector(0, 0.5, 0);
     createRoom(position, rotation);
   }
   mouseClicked = false;
 
-  translate(0, 250, 0);
+  
 
   long newTime = System.currentTimeMillis();
   float dt = ((float)(newTime - lastTime))/1000;
@@ -291,7 +293,7 @@ boolean collides(SphereCollider s1, SphereCollider s2)
         o1.setVelocity(PVector.mult(dir, velocity1), s1.getPosition());
       }
       if (!o2.isFloating()) {
-        float velocity2 = (bounce*mass1*(speed1 - speed2) + mass1 * speed1 + mass2 * speed2)/(mass1 + mass2);
+        float velocity2 = (bounce*mass1*(speed1 - speed2) + mass1 * speed1 + mass2 * speed2)/(mass1 + mass2); //<>//
         o2.setVelocity(PVector.mult(dir, -velocity2), s2.getPosition());
       }
       return true;
@@ -316,9 +318,9 @@ float findT(float distance, PVector oldPos1, PVector oldPos2, PVector v1, PVecto
   }
   float t = tmin + (tmax-tmin)/2;
   PVector newDistance = PVector.sub(PVector.add(oldPos1, PVector.mult(v1, t)), PVector.add(oldPos2, PVector.mult(v2, t)));
-  if (newDistance.x*newDistance.x + newDistance.y*newDistance.y + newDistance.z*newDistance.z < distance*distance)
+  if (newDistance.x*newDistance.x + newDistance.y*newDistance.y + newDistance.z*newDistance.z < distance*distance) //<>//
     return findT(distance, oldPos1, oldPos2, v1, v2, tmin, t, ++maxIter);
-  else if (newDistance.mag() < distance + DISTANCE_MIN_SPHERE_COLLIDERS)
+  else if (newDistance.mag() < distance + DISTANCE_MIN_SPHERE_COLLIDERS) //<>//
     return t;
   else
     return findT(distance, oldPos1, oldPos2, v1, v2, t, tmax, ++maxIter);
@@ -337,7 +339,7 @@ boolean goThroughCollider(SphereCollider toGoThrough, SphereCollider s1)
 
 void translate(PVector p) {
   translate(p.x, p.y, p.z);
-}
+} //<>//
 
 Object3D createDefaultBalloon(PVector position) { //<>//
   //volumic mass 0.169 is for heliumy
@@ -362,9 +364,9 @@ Object3D createWall(PVector position, PVector rot) {
 
   Set<Vertice> mVertices = new HashSet();
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(WALL_SIZE/2, -WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
-  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1));
+  mVertices.add(new Vertice(new PVector(WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, WALL_SIZE/2, 0), new PVector(-WALL_SIZE/2, -WALL_SIZE/2, 0), o1)); //<>//
 
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>//
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>// //<>//
   o1.setShape(wall);
   return o1; //<>//
 }
@@ -377,12 +379,12 @@ Object3D createRoofWall(PVector position, PVector rot) {
   Set<Vertice> mVertices = new HashSet();
   mVertices.add(new Vertice(new PVector(WALL_SIZE/2, 0, 0), new PVector(-WALL_SIZE/2, 0, 0), new PVector(0, -WALL_SIZE/2, WALL_SIZE/2), o1));
 
-  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1));
+  o1.addCollider(new SphereCollider(new PVector(0, 0, 0), radius, mVertices, o1)); //<>//
   o1.setShape(roofWall);
   return o1;
 }
-
-//Create default square shaped wall of size 500x500
+ //<>//
+//Create default square shaped wall of size 500x500 //<>//
 void createRoom(PVector position, PVector rot) {
   Object3D current = createWall(position.copy().add(new PVector(0, 0, -WALL_SIZE/2)), new PVector(0, 0, 0));
   roomObjects.add(current);
@@ -433,7 +435,7 @@ PMatrix3D toMatrix(float[][] matrix) {
 }
 //<>//
 boolean goThroughVerticesCollision(SphereCollider s, Set<Vertice> vertices) {
-  for (Vertice v : vertices) { //<>// //<>//
+  for (Vertice v : vertices) { //<>// //<>// //<>//
     if (isCollidingSurface(s, v))
       return true;
   }
@@ -467,7 +469,7 @@ boolean isCollidingSurface(SphereCollider s, Vertice v) {
     return false;
   }
 
-  PVector oldCenter = s.getAbsolutePosition(true);
+  PVector oldCenter = s.getAbsolutePosition(true); //<>//
   PVector velocity = PVector.sub(center, oldCenter);
   float t0 = (radius - Math.abs((normal.dot(oldCenter) + c)))/normal.dot(velocity);
   if (t0 > 1 + OVER_BACKTRACKING_TRIANGLE || t0 < 0 - OVER_BACKTRACKING_TRIANGLE)

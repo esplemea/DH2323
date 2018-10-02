@@ -4,6 +4,12 @@ Authors:
 
 Zac Cook, Virgile Hernicot, Nicolas Zimmermann.
 
+Description:
+Simulation of multiple air baloons in 3D using our own simulation of colliders (eithers spheres or triangles) for collision detection and backtracking of the position of the collision.
+
+Demo Video:
+- https://www.youtube.com/watch?v=GHmrOfOiBXQ
+
 Archive content:
 
 - project report (PDF)
